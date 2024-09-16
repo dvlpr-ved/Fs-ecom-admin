@@ -1,3 +1,1 @@
-<template>
-    cdnj
-</template>
+<template></template>
