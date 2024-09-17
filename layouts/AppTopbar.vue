@@ -70,7 +70,7 @@ const isOutsideClicked = (event) => {
 <template>
   <div class="layout-topbar">
     <router-link to="/" class="layout-topbar-logo">
-      <img src="/public/favicon.png" alt="logo" />
+      <img src="/favicon.png" alt="logo" />
       <span>Fashtsaly</span>
     </router-link>
 

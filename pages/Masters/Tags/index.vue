@@ -1,106 +1,195 @@
 <template>
-    <div class="grid">
-        <div class="col-12">
-            <div class="card">
-                <Toolbar class="mb-4">
-                    <template v-slot:start>
-                        <div class="my-2">
-                            <Button label="New" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
-                        </div>
-                    </template>
-                </Toolbar>
-                <DataTable
-                    v-if="data"
-                    ref="table"
-                    :value="data.data"
-                    dataKey="id"
-                    :paginator="true"
-                    :rows="10"
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} roles">
-                    <template #header>
-                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 class="m-0">Manage Tags</h5>
-                            <IconField iconPosition="left" class="block mt-2 md:mt-0">
-                                <InputIcon class="pi pi-search" />
-                                <InputText class="w-full sm:w-auto"  placeholder="Search..." />
-                            </IconField>
-                        </div>
-                    </template>
-                    <Column field="ID" header="ID" headerStyle="width:auto; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">ID</span>
-                            {{ slotProps.data.id }}
-                        </template>
-                    </Column>
-                    <Column field="Name" header="Name"  headerStyle="width:auto; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Name</span>
-                            {{ slotProps.data.title }}
-                        </template>
-                    </Column>
-                    <Column field="Created at" header="Created at"  headerStyle="width:auto; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Created at</span>
-                            {{ slotProps.data.created_at }}
-                        </template>
-                    </Column>
-                    <Column field="Action" header="Action" headerStyle="min-width:10rem;">
-                        <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editEntryOpen(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteEntry(slotProps.data)" />
-                        </template>
-                    </Column>
-                </DataTable>
-
-                <Dialog v-model:visible="createDialog" :style="{ width: '450px' }" header="Create vendor" :modal="true" class="p-fluid">
-                    <div class="field">
-                        <label for="name">Name <span class="text-red-400">*</span></label>
-                        <InputText id="name" v-model.trim="makeEntry.name" required="true" autofocus :invalid="submitted && !makeEntry.name" />
-                        <small class="p-invalid" v-if="submitted && !makeEntry.name">Name is required.</small>
-                    </div>
-                    <template #footer>
-                        <Button label="Cancel" icon="pi pi-times" class="mr-2" severity="danger"  @click="hideDialog" />
-                        <Button label="Save" icon="pi pi-check" class="mr-2" severity="success"  @click="saveEntry" />
-                    </template>
-                </Dialog>
-
-                <Dialog v-model:visible="editDialog" :style="{ width: '450px' }" header="Edit vendor" :modal="true" class="p-fluid">
-                    <div class="field">
-                        <label for="name">Name</label>
-                        <InputText id="name" v-model.trim="editEntry.name" required="true" autofocus :invalid="submittededit && !editEntry.name" />
-                        <small class="p-invalid" v-if="submittededit && !editEntry.name">Name is required.</small>
-                    </div>
-                    <template #footer>
-                        <Button label="Cancel" icon="pi pi-times" class="mr-2" severity="danger"  @click="hideDialogEdit" />
-                        <Button label="Save" icon="pi pi-check" class="mr-2" severity="success"  @click="updateEntry" />
-                    </template>
-                </Dialog>                
-
-                <Dialog v-model:visible="deleteDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-                    <div class="flex align-items-center justify-content-center">
-                        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="product"
-                            >Are you sure you want to delete <b>{{ deleteEntry.name }}</b
-                            >?</span>
-                    </div>
-                    <template #footer>
-                        <Button label="No" icon="pi pi-times" text @click="deleteDialog = false" />
-                        <Button label="Yes" icon="pi pi-check" text @click="deleteEntrySingle" />
-                    </template>
-                </Dialog>
-
-                
+  <div class="grid">
+    <div class="col-12">
+      <div class="card">
+        <Toolbar class="mb-4">
+          <template v-slot:start>
+            <div class="my-2">
+              <Button
+                label="New"
+                icon="pi pi-plus"
+                class="mr-2"
+                severity="success"
+                @click="openNew"
+              />
             </div>
+          </template>
+        </Toolbar>
+        <DataTable
+          v-if="data"
+          ref="table"
+          :value="data.data"
+          dataKey="id"
+          :paginator="true"
+          :rows="10"
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          :rowsPerPageOptions="[5, 10, 25]"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} roles"
+        >
+          <template #header>
+            <div
+              class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
+            >
+              <h5 class="m-0">Manage Tags</h5>
+              <IconField iconPosition="left" class="block mt-2 md:mt-0">
+                <InputIcon class="pi pi-search" />
+                <InputText class="w-full sm:w-auto" placeholder="Search..." />
+              </IconField>
+            </div>
+          </template>
+          <Column field="ID" header="ID" headerStyle="width:auto; min-width:10rem;">
+            <template #body="slotProps">
+              <span class="p-column-title">ID</span>
+              {{ slotProps.data.id }}
+            </template>
+          </Column>
+          <Column field="Name" header="Name" headerStyle="width:auto; min-width:10rem;">
+            <template #body="slotProps">
+              <span class="p-column-title">Name</span>
+              {{ slotProps.data.title }}
+            </template>
+          </Column>
+          <Column
+            field="Created at"
+            header="Created at"
+            headerStyle="width:auto; min-width:10rem;"
+          >
+            <template #body="slotProps">
+              <span class="p-column-title">Created at</span>
+              {{ slotProps.data.created_at }}
+            </template>
+          </Column>
+          <Column field="Action" header="Action" headerStyle="min-width:10rem;">
+            <template #body="slotProps">
+              <Button
+                icon="pi pi-pencil"
+                class="mr-2"
+                severity="success"
+                rounded
+                @click="editEntryOpen(slotProps.data)"
+              />
+              <Button
+                icon="pi pi-trash"
+                class="mt-2"
+                severity="warning"
+                rounded
+                @click="confirmDeleteEntry(slotProps.data)"
+              />
+            </template>
+          </Column>
+        </DataTable>
+
+        <div
+          v-else
+          class="flex items-center justify-center text-primary"
+          style="justify-content: center"
+        >
+          <span><i class="pi pi-spin pi-spinner text-8xl"></i></span>
         </div>
+
+        <Dialog
+          v-model:visible="createDialog"
+          :style="{ width: '450px' }"
+          header="Create vendor"
+          :modal="true"
+          class="p-fluid"
+        >
+          <div class="field">
+            <label for="name">Name <span class="text-red-400">*</span></label>
+            <InputText
+              id="name"
+              v-model.trim="makeEntry.name"
+              required="true"
+              autofocus
+              :invalid="submitted && !makeEntry.name"
+            />
+            <small class="p-invalid" v-if="submitted && !makeEntry.name"
+              >Name is required.</small
+            >
+          </div>
+          <template #footer>
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              class="mr-2"
+              severity="danger"
+              @click="hideDialog"
+            />
+            <Button
+              label="Save"
+              icon="pi pi-check"
+              class="mr-2"
+              severity="success"
+              @click="saveEntry"
+            />
+          </template>
+        </Dialog>
+
+        <Dialog
+          v-model:visible="editDialog"
+          :style="{ width: '450px' }"
+          header="Edit vendor"
+          :modal="true"
+          class="p-fluid"
+        >
+          <div class="field">
+            <label for="name">Name</label>
+            <InputText
+              id="name"
+              v-model.trim="editEntry.name"
+              required="true"
+              autofocus
+              :invalid="submittededit && !editEntry.name"
+            />
+            <small class="p-invalid" v-if="submittededit && !editEntry.name"
+              >Name is required.</small
+            >
+          </div>
+          <template #footer>
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              class="mr-2"
+              severity="danger"
+              @click="hideDialogEdit"
+            />
+            <Button
+              label="Save"
+              icon="pi pi-check"
+              class="mr-2"
+              severity="success"
+              @click="updateEntry"
+            />
+          </template>
+        </Dialog>
+
+        <Dialog
+          v-model:visible="deleteDialog"
+          :style="{ width: '450px' }"
+          header="Confirm"
+          :modal="true"
+        >
+          <div class="flex align-items-center justify-content-center">
+            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+            <span v-if="product"
+              >Are you sure you want to delete <b>{{ deleteEntry.name }}</b
+              >?</span
+            >
+          </div>
+          <template #footer>
+            <Button label="No" icon="pi pi-times" text @click="deleteDialog = false" />
+            <Button label="Yes" icon="pi pi-check" text @click="deleteEntrySingle" />
+          </template>
+        </Dialog>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import makeCustomRequest from '../../../composables/makeCustomRequest';
+import { ref, onMounted } from "vue";
+import { useToast } from "primevue/usetoast";
+import makeCustomRequest from "../../../composables/makeCustomRequest";
 const toast = useToast();
 
 const createDialog = ref(false);
@@ -108,146 +197,153 @@ const editDialog = ref(false);
 const deleteDialog = ref(false);
 const product = ref({});
 const submitted = ref(false);
-const submittededit = ref(false)
+const submittededit = ref(false);
 const catgMast = ref(null);
 const catgMastIndexedArr = ref(null);
 const createImageUploader = ref(false);
 const editImageUploader = ref(false);
 // Get entries
 onMounted(() => {
-    getTableData();
+  getTableData();
 });
 const table = ref();
 const data = ref(null);
 
 const pagination = computed(() => {
-    if(data.value){
-        const last_page = toFixed(data.value.total/10);
-        return  {current : data.value.current_page , total : data.total , last : last_page};
-    }
+  if (data.value) {
+    const last_page = toFixed(data.value.total / 10);
+    return { current: data.value.current_page, total: data.total, last: last_page };
+  }
 });
-const getTableData = async  () => {
-data.value  = await makeCustomRequest({
-    url : 'api/Masters/Tags',
-    method : 'GET',
-});
-}
+const getTableData = async () => {
+  data.value = await makeCustomRequest({
+    url: "api/Masters/Tags",
+    method: "GET",
+  });
+};
 // Get entries ends
 
 // create entry
 const openNew = () => {
-    submitted.value = false;
-    createDialog.value = true;
+  submitted.value = false;
+  createDialog.value = true;
 };
 
 const hideDialog = () => {
-    createDialog.value = false;
-    submitted.value = false;
+  createDialog.value = false;
+  submitted.value = false;
 };
 const hideDialogEdit = () => {
-    editDialog.value = false;
-    submittededit.value = false;
+  editDialog.value = false;
+  submittededit.value = false;
 };
 
 const makeEntry = reactive({
-    name   : '',
+  name: "",
 });
 
 const saveEntry = async () => {
-    submitted.value = true;
-    if(makeEntry.name != ''){
-        const url = "api/Masters/Tags";
-        const res = await makeCustomRequest({
-            url : url,
-            method : 'POST',
-            body : {name : makeEntry.name}
-        });
-        if(res.success){
-            createDialog.value= false;
-            getTableData();
-            toast.add({ severity: 'success', summary: 'Vendor added successfully', life: 3000 });
-        }
-        else{
-            toast.add({ severity: 'error', summary: 'Something went wrong', life: 3000 });
-        }
+  submitted.value = true;
+  if (makeEntry.name != "") {
+    const url = "api/Masters/Tags";
+    const res = await makeCustomRequest({
+      url: url,
+      method: "POST",
+      body: { name: makeEntry.name },
+    });
+    if (res.success) {
+      createDialog.value = false;
+      getTableData();
+      toast.add({
+        severity: "success",
+        summary: "Vendor added successfully",
+        life: 3000,
+      });
+    } else {
+      toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
     }
+  }
 };
- // create Ends
+// create Ends
 
-
- // Edit entry
+// Edit entry
 const editEntry = reactive({
-    id : '',
-    name   : '',
-    email : '',
-    contact : ''
+  id: "",
+  name: "",
+  email: "",
+  contact: "",
 });
 
 const editEntryOpen = (en) => {
-    editEntry.name = en.title;
-    editEntry.id = en.id;
-    editDialog.value = true;
-}
+  editEntry.name = en.title;
+  editEntry.id = en.id;
+  editDialog.value = true;
+};
 
-const updateEntry =async () => {
-    submittededit.value = true;
-    if(editEntry.name != ''){
-        const url = `api/Masters/Tags/${editEntry.id}`;
-        const token = localStorage.getItem('OAuth-token');
-        const res = await makeCustomRequest({
-            url : url,
-            method : 'PATCH',
-            body : {name : editEntry.name}
-        });
-        if(res.success){
-            editDialog.value= false;
-            getTableData();
-            toast.add({ severity: 'success', summary: 'Vendor updated successfully', life: 3000 });
-        }
-        else{
-            toast.add({ severity: 'error', summary: 'Something went wrong', life: 3000 });
-        }
+const updateEntry = async () => {
+  submittededit.value = true;
+  if (editEntry.name != "") {
+    const url = `api/Masters/Tags/${editEntry.id}`;
+    const token = localStorage.getItem("OAuth-token");
+    const res = await makeCustomRequest({
+      url: url,
+      method: "PATCH",
+      body: { name: editEntry.name },
+    });
+    if (res.success) {
+      editDialog.value = false;
+      getTableData();
+      toast.add({
+        severity: "success",
+        summary: "Vendor updated successfully",
+        life: 3000,
+      });
+    } else {
+      toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
     }
+  }
 };
 
 // Edit entry ends
 
-// Delete entry start 
+// Delete entry start
 const deleteEntry = reactive({
-    id : '',
-    name   : '',
-    parent : ''
+  id: "",
+  name: "",
+  parent: "",
 });
 
 const confirmDeleteEntry = (deleteprod) => {
-    deleteEntry.name = deleteprod.name;
-    deleteEntry.id = deleteprod.id;
-    deleteDialog.value = true;
-}
-const deleteEntrySingle =async () => {
-    const url = `api/Masters/Tags/${deleteEntry.id}`;
-    const token = localStorage.getItem('OAuth-token');
-    const res = await makeCustomRequest({
-        url : url,
-        method : 'DELETE',
-        body : {id : deleteEntry.id}
+  deleteEntry.name = deleteprod.name;
+  deleteEntry.id = deleteprod.id;
+  deleteDialog.value = true;
+};
+const deleteEntrySingle = async () => {
+  const url = `api/Masters/Tags/${deleteEntry.id}`;
+  const token = localStorage.getItem("OAuth-token");
+  const res = await makeCustomRequest({
+    url: url,
+    method: "DELETE",
+    body: { id: deleteEntry.id },
+  });
+  if (res.success) {
+    deleteDialog.value = false;
+    getTableData();
+    toast.add({
+      severity: "success",
+      summary: "Vendor deleted successfully",
+      life: 3000,
     });
-    if(res.success){
-        deleteDialog.value= false;
-        getTableData();
-        toast.add({ severity: 'success', summary: 'Vendor deleted successfully', life: 3000 });
-    }
-    else{
-        toast.add({ severity: 'error', summary: 'Something went wrong', life: 3000 });
-    }
-}
+  } else {
+    toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
+  }
+};
 // Delete entry ends
 
-
 const nameParentCatg = (id) => {
-    console.log(id);
-    if(catgMastIndexedArr.value) {
-        return catgMastIndexedArr.value[id] ? catgMastIndexedArr.value[id] : 'N/A';
-    }
-}
+  console.log(id);
+  if (catgMastIndexedArr.value) {
+    return catgMastIndexedArr.value[id] ? catgMastIndexedArr.value[id] : "N/A";
+  }
+};
 </script>

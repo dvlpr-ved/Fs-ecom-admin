@@ -48,7 +48,12 @@ const model = ref([
                 label: 'Subscription Plans',
                 icon: 'pi pi-fw pi-user',
                 to: '/Masters/Subscription'
-            }                        
+            },                       
+            {
+                label: 'Manage Meta Data',
+                icon: 'pi pi-fw pi-user',
+                to: '/Masters/metadata'
+            },                       
         ]
     },
 ]);
