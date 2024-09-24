@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     typescript: false,
     app: {
         head: {
-            title: 'Sakai Vue',
+            title: 'fashtsaly dashboard',
             link: [
                 {
                     id: 'theme-css',

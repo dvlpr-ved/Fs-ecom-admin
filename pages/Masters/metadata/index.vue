@@ -2,16 +2,13 @@
   <div class="grid">
     <div class="col-12">
       <div class="card">
-        <div
-          v-if="!loading && TableData.length"
-          class="CutomResponsiveTable table-container"
-        >
+        <div v-if="!loading && TableData" class="CutomResponsiveTable table-container">
           <DataTable v-if="TableData" ref="table" :value="TableData" dataKey="id">
             <template #header>
               <div
                 class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
               >
-                <h5 class="m-0">Manage Plans</h5>
+                <h5 class="m-0">Manage Meta Tags</h5>
               </div>
             </template>
             <Column field="id" header="No" headerStyle="width:auto; min-width:10rem;">
@@ -23,25 +20,15 @@
 
             <Column
               field="title"
-              header="Name"
+              header="Page Name"
               headerStyle="width:auto; min-width:10rem;"
             >
               <template #body="slotProps">
-                <span class="p-column-title">Name</span>
-                {{ slotProps.data.title }}
+                <span class="p-column-title">Page Name</span>
+                {{ slotProps.data.page_title }}
               </template>
             </Column>
 
-            <Column
-              field="price"
-              header="Price"
-              headerStyle="width:auto; min-width:10rem;"
-            >
-              <template #body="slotProps">
-                <span class="p-column-title">Price</span>
-                ₹ {{ slotProps.data.price }}
-              </template>
-            </Column>
             <Column header="Action" headerStyle="min-width:10rem;">
               <template #body="slotProps">
                 <div class="flex items-center">
@@ -73,21 +60,36 @@
           class="p-fluid"
         >
           <div class="field">
-            <label for="price">Price<span class="text-red-400"> *</span></label>
+            <label for="price">Page Title<span class="text-red-400"> *</span></label>
             <InputText
-              v-model.trim="makeEntry.price"
+              v-model.trim="makeEntry.page_title"
               required
               autofocus
-              :invalid="submitted && !makeEntry.price"
+              :invalid="submitted && !makeEntry.page_title"
             />
           </div>
           <div class="field">
-            <label for="title">Plan Title<span class="text-red-400"> *</span></label>
+            <label for="title"
+              >Meta Keywords (comma seprated keywords)<span class="text-red-400">
+                *</span
+              ></label
+            >
             <InputText
-              v-model.trim="makeEntry.title"
+              v-model.trim="makeEntry.page_meta_tags"
               required
               autofocus
-              :invalid="submitted && !makeEntry.title"
+              :invalid="submitted && !makeEntry.page_meta_tags"
+            />
+          </div>
+          <div class="field">
+            <label for="title"
+              >Meta Description <span class="text-red-400"> *</span></label
+            >
+            <InputText
+              v-model.trim="makeEntry.page_description"
+              required
+              autofocus
+              :invalid="submitted && !makeEntry.page_description"
             />
           </div>
           <template #footer>
@@ -116,29 +118,28 @@
 import { ref, reactive, onMounted } from "vue";
 import { useToast } from "primevue/usetoast";
 const toast = useToast();
-const TableData = ref([]);
+const TableData = ref(null);
 const loading = ref(false);
 const editDialog = ref(false);
 const submitted = ref(false);
 
 const makeEntry = reactive({
-  plan_id: "",
-  price: "",
-  title: "",
+  page_id: "",
+  page_title: "",
+  page_meta_tags: null,
+  page_description: "",
 });
 
 const getTableData = async () => {
   loading.value = true;
   try {
-    const response = await fetch(
-      "https://fashtsaly.com/API/public/api/getSubscriptionPlans",
-      {
-        method: "GET",
-      }
-    );
+    const response = await fetch("https://fashtsaly.com/API/public/api/getMetaTags", {
+      method: "GET",
+    });
     if (response.ok) {
       const jsonResponse = await response.json();
-      TableData.value = jsonResponse.data;
+      TableData.value = jsonResponse;
+      loading.value = false;
     } else {
       toast.add({ severity: "error", summary: "Server Error", life: 3000 });
     }
@@ -149,10 +150,11 @@ const getTableData = async () => {
   }
 };
 
-const editEntryOpen = (plan) => {
-  makeEntry.plan_id = plan.id;
-  makeEntry.price = plan.price;
-  makeEntry.title = plan.title;
+const editEntryOpen = (pageData) => {
+  makeEntry.page_id = pageData.id;
+  makeEntry.page_title = pageData.page_title;
+  makeEntry.page_meta_tags = pageData.meta_tags;
+  makeEntry.page_description = pageData.description;
   editDialog.value = true;
 };
 
@@ -162,22 +164,24 @@ const hideDialog = () => {
 
 const updatePlan = async () => {
   submitted.value = true;
-  if (makeEntry.title && makeEntry.price) {
-    const url = "api/updateSubscriptionPlans";
+  if (makeEntry.page_title && makeEntry.page_meta_tags) {
+    const url = "api/updateMetaTags";
+
     try {
       const response = await makeCustomRequest({
         url: url,
         method: "POST",
         body: {
-          subscription_id: makeEntry.plan_id,
-          title: makeEntry.title,
-          price: makeEntry.price,
+          page_id: makeEntry.page_id,
+          title: makeEntry.page_title,
+          meta_tags: makeEntry.page_meta_tags,
+          description: makeEntry.page_description,
         },
       });
       if (response) {
         toast.add({
           severity: "success",
-          summary: "Plan Updated successfully",
+          summary: "Updated successfully",
           life: 3000,
         });
         hideDialog();
