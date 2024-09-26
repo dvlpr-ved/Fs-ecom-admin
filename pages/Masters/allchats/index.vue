@@ -2,7 +2,6 @@
   <div class="grid">
     <div class="col-12">
       <div class="card">
-        {{ TableData }}
         <div v-if="TableData" class="CutomResponsiveTable table-container">
           <DataTable v-if="TableData" ref="table" :value="TableData" dataKey="id">
             <template #header>
@@ -21,47 +20,39 @@
 
             <Column
               field="title"
-              header="Name"
+              header="userId"
               headerStyle="width:auto; min-width:10rem;"
             >
               <template #body="slotProps">
-                <span class="p-column-title">Name</span>
-                {{ slotProps.data.name }}
+                <span class="p-column-title">userId</span>
+                {{ slotProps.data.user_id }}
               </template>
             </Column>
             <Column
               field="title"
-              header="Phone"
+              header="User Name"
               headerStyle="width:auto; min-width:5rem;"
             >
               <template #body="slotProps">
-                <span class="p-column-title">Phone</span>
-                {{ slotProps.data.phone }}
+                <span class="p-column-title">User Name</span>
+                {{ slotProps.data.user_name }}
               </template>
             </Column>
-            <Column
-              field="title"
-              header="Email"
-              headerStyle="width:auto; min-width:8rem;"
-            >
+            <Column header="Action" headerStyle="min-width:10rem;">
               <template #body="slotProps">
-                <span class="p-column-title">Email</span>
-                {{ slotProps.data.email }}
-              </template>
-            </Column>
-            <Column
-              field="title"
-              header="Message"
-              headerStyle="width:auto; min-width:15rem;"
-            >
-              <template #body="slotProps">
-                <span class="p-column-title">Message</span>
-                {{ slotProps.data.message }}
+                <div class="flex items-center">
+                  <span
+                    class="cursor-pointer"
+                    style="color: #10b981"
+                    @click="handleReply(slotProps.data.user_id, slotProps.data.user_name)"
+                    >Reply</span
+                  >
+                  <!-- @click="editEntrOpen(slotProps.data)" -->
+                </div>
               </template>
             </Column>
           </DataTable>
         </div>
-
         <div
           v-else
           class="flex items-center justify-center text-primary"
@@ -72,6 +63,11 @@
       </div>
     </div>
   </div>
+  <chatboat
+    :chatBoatVisible="chatBoatVisible"
+    @closeBoat="closeBoat"
+    :userData="sendCleintData"
+  />
 </template>
 
 <script setup>
@@ -80,6 +76,23 @@ import { useToast } from "primevue/usetoast";
 const toast = useToast();
 const TableData = ref(null);
 const loading = ref(false);
+const chatBoatVisible = ref(false);
+const sendCleintData = reactive({
+  userId: "",
+  userName: "",
+});
+
+const closeBoat = () => {
+  chatBoatVisible.value = false;
+};
+
+const handleReply = (user_id, user_name) => {
+  sendCleintData.userId = user_id;
+  sendCleintData.userName = user_name;
+  chatBoatVisible.value = !chatBoatVisible.value;
+};
+
+// https://fashtsaly.com/API/public/api/getchat?user_id=16
 
 const getTableData = async () => {
   loading.value = true;
@@ -89,9 +102,9 @@ const getTableData = async () => {
       method: "GET",
     });
 
-    if (response.ok) {
-      const jsonResponse = await response.json();
-      TableData.value = jsonResponse.data;
+    if (response) {
+      // const jsonResponse = await response.json();
+      TableData.value = response.data.data;
       loading.value = false;
     } else {
       toast.add({ severity: "error", summary: "Server Error", life: 3000 });
