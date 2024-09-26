@@ -85,7 +85,7 @@ const getTableData = async () => {
   loading.value = true;
   try {
     const response = await makeCustomRequest({
-      url: "https://fashtsaly.com/API/public/api/getAllchatAdmin",
+      url: "api/getAllchatAdmin",
       method: "GET",
     });
 
