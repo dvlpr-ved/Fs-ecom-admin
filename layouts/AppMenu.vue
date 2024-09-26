@@ -53,6 +53,11 @@ const model = ref([
                 label: 'Manage Meta Data',
                 icon: 'pi pi-fw pi-user',
                 to: '/Masters/metadata'
+            },
+            {
+                label: 'Manage Permissions',
+                icon: 'pi pi-fw pi-user',
+                to: '/permissions'
             },                       
         ]
     },

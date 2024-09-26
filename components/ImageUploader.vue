@@ -154,25 +154,39 @@ const onRemoveTemplatingFile = (file, removeFileCallback, index) => {
     totalSizePercent.value = totalSize.value / 10;
 };
 
-const onClearTemplatingUpload = (clear) => {
-    clear();
+const onClearTemplatingUpload = (clearCallback) => {
+    clearCallback();
     totalSize.value = 0;
-    totalSizePercent.value = 0;
+    totalSizePercent.value = 0; // Reset progress when clearing files
+    files.value = [];
+    uploadedFiles.value = [];
 };
 
 const onSelectedFiles = (event) => {
     files.value = event.files;
-    files.value.forEach(file => {
-        totalSize.value += parseInt(formatSize(file.size));
-    });
+    totalSize.value = files.value.reduce((total, file) => total + file.size, 0); // Calculate total size
+    totalSizePercent.value = 0;  // Reset progress
+    updateProgress();
 };
 
 const uploadEvent = (callback) => {
     totalSizePercent.value = totalSize.value / 10;
     callback();
+    updateProgress();
+};
+
+const updateProgress = () => {
+    const uploadedSize = uploadedFiles.value.reduce((total, file) => total + file.size, 0);
+    totalSizePercent.value = (uploadedSize / totalSize.value) * 100;
+    
+    if (totalSizePercent.value >= 100) {
+        totalSizePercent.value = 100;
+    }
 };
 
 const onTemplatedUpload = () => {
+    uploadedFiles.value = [...uploadedFiles.value, ...event.files];  
+    updateProgress();                                                
     toast.add({ severity: "info", summary: "Success", detail: "File Uploaded", life: 3000 });
 };
 
@@ -210,7 +224,11 @@ const customBase64Uploader = async (event) => {
                 }
             });
             if (res.success) {
-                preUploads.value.push({ 'source': res.data.source, 'name': res.data.name });
+                preUploads.value.unshift({ 
+                    'source': res.data.source, 
+                    'name': res.data.name,
+                    'code': res.data.code
+                });
             }
         };
     }
