@@ -61,8 +61,13 @@ const model = ref([
       },
       {
         label: "Manage Chats",
-        icon: "pi pi-phone",
+        icon: "pi pi-comments",
         to: "/Masters/allchats",
+      },
+      {
+        label: "Manage Reprots",
+        icon: "pi pi-comments",
+        to: "/Masters/reports",
       },
     ],
   },
