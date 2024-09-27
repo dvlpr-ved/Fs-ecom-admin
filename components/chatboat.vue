@@ -90,12 +90,12 @@ const visible = computed(() => {
   return chatBoatVisible;
 });
 watch(
-  () => userData.userId, // Watch the userId specifically
+  () => userData.userId, 
   async (newUserId) => {
     if (newUserId) {
       currentPage.value = 1;
-      messages.value = []; // Reset messages
-      await getChatAnswer(); // Fetch messages for the new user
+      messages.value = []; 
+      await getChatAnswer(); 
     }
   }
 );
