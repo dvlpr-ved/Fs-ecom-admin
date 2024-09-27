@@ -90,17 +90,14 @@ const visible = computed(() => {
   return chatBoatVisible;
 });
 watch(
-  visible,
-  (newValue) => {
-    console.log("Watcher triggered: chatBoatVisible changed to", newValue);
-    if (newValue) {
-      console.log("Chatboat opened. Resetting states and fetching data...");
-      currentPage.value = 1; // Reset to the first page when chatBoat is shown
-      messages.value = []; // Clear messages when it opens
-      getChatAnswer(); // Fetch new data
+  () => userData.userId, // Watch the userId specifically
+  async (newUserId) => {
+    if (newUserId) {
+      currentPage.value = 1;
+      messages.value = []; // Reset messages
+      await getChatAnswer(); // Fetch messages for the new user
     }
-  },
-  { immediate: true }
+  }
 );
 
 onMounted(() => {
