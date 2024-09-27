@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import AppMenuItem from "./AppMenuItem.vue";
+
 const model = ref([
   {
     label: "Home",
@@ -65,25 +66,67 @@ const model = ref([
         to: "/Masters/allchats",
       },
       {
-        label: "Manage Reprots",
-        icon: "pi pi-comments",
-        to: "/Masters/reports",
+        label: "Manage Reports",
+        icon: "pi pi-flag",
+        items: [
+          {
+            label: "Orders Report",
+            icon: "pi pi-chart-line",
+            to: "/reports/ordersreport",
+          },
+          {
+            label: "stock report",
+            icon: "pi pi-chart-line",
+            to: "/reports/stockreport",
+          },
+        ],
+        expanded: false,
+      },
+      {
         label: "Manage Permissions",
-        icon: "pi pi-phone",
+        icon: "pi pi-file-export",
         to: "/permissions",
       },
     ],
   },
 ]);
+
+const toggleReports = (item) => {
+  item.expanded = !item.expanded;
+};
 </script>
 
 <template>
   <ul class="layout-menu">
-    <template v-for="(item, i) in model" :key="item">
-      <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
+    <template v-for="(item, i) in model" :key="item.label">
+      <app-menu-item
+        v-if="!item.separator"
+        :item="item"
+        :index="i"
+        @click="item.items && toggleReports(item)"
+      >
+      </app-menu-item>
+      <ul v-if="item.items && item.expanded">
+        <li v-for="(subItem, j) in item.items" :key="subItem.label">
+          <app-menu-item :item="subItem" :index="j"></app-menu-item>
+        </li>
+      </ul>
       <li v-if="item.separator" class="menu-separator"></li>
     </template>
   </ul>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.layout-menu {
+  list-style-type: none;
+  padding: 0;
+}
+
+.layout-menu > li {
+  margin: 0.5em 0;
+}
+
+ul {
+  padding-left: 20px;
+}
+</style>
