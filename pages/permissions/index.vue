@@ -3,8 +3,19 @@
       <div class="col-12">
         <div class="card">
           <div class="field">
-                <Dropdown :filter="true" @change="getData" v-model="selectedRole" :options="role" optionLabel="name" optionValue="id" placeholder="Select Role" />
             </div>
+            <Toolbar class="mb-4">
+              <template v-slot:start>
+                  <div class="my-2">
+                    <Dropdown :filter="true" @change="getData" v-model="selectedRole" :options="role" optionLabel="name" optionValue="id" placeholder="Select Role" />
+                    <DatePicker v-model="date" />
+                  </div>
+              </template>
+
+              <template v-slot:end>
+                  <Button label="Update Permissions" icon="pi pi-upload" severity="help" @click="updatePermissions()" />
+              </template>
+            </Toolbar>            
           <div v-if="!loading && TableData" class="CutomResponsiveTable table-container">
             <DataTable v-if="TableData" ref="table" :value="TableData" dataKey="id">
               <template #header>
@@ -35,13 +46,7 @@
               <Column header="Action" headerStyle="min-width:10rem;">
                 <template #body="slotProps">
                   <div class="flex items-center">
-                    <Button
-                      icon="pi pi-pencil"
-                      class="mr-2"
-                      severity="success"
-                      rounded
-                      @click="editEntryOpen(slotProps.data)"
-                    />
+                    <Checkbox v-model="permissions" :inputId="'ingredient1' + slotProps.data.id" name="permissions" :value="slotProps.data.id" />
                   </div>
                 </template>
               </Column>
@@ -112,21 +117,23 @@
   <script setup>
   import { ref, reactive, onMounted } from "vue";
   import { useToast } from "primevue/usetoast";
+  
   const toast = useToast();
   const TableData = ref(null);
   const loading = ref(false);
   const editDialog = ref(false);
   const submitted = ref(false);
-  
+  const date = ref('');
   const getTableData = async (role) => {
     loading.value = true;
     try {
       const response = await makeCustomRequest({
-        url :"api/getModules",
+        url :`api/getModules?role_id=${selectedRole.value}`,
         method : "GET"
       });
       if (response.success) {
         TableData.value = response.data;
+        permissions.value = response.permissions;
         loading.value = false;
       } else {
         toast.add({ severity: "error", summary: "Server Error", life: 3000 });
@@ -150,10 +157,27 @@
   });
   role.value = responserole.data.data;
 }
+const permissions = ref();
 const selectedRole = ref(null);
 const getData = () => {
   getTableData(selectedRole.value);
 }; 
+const updatePermissions =async () => {
+  const save = await makeCustomRequest({
+    url : 'api/updatePermissions',
+    method : 'POST',
+    body : {
+      role_id : selectedRole.value,
+      modules : permissions.value
+    }
+  });
+  if(save.success){
+    toast.add({ severity: 'success', summary: 'Permissions updated successfully', life: 3000 });
+  }
+  else{
+    toast.add({ severity: 'error', summary: 'Something went wrong', life: 3000 });
+  }
+}
 </script>
   
   <style lang="scss">

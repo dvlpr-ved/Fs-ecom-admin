@@ -64,6 +64,11 @@ const model = ref([
         icon: "pi pi-phone",
         to: "/Masters/allchats",
       },
+      {
+        label: "Manage Permissions",
+        icon: "pi pi-phone",
+        to: "/permissions",
+      },
     ],
   },
 ]);
