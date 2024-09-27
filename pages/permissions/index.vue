@@ -3,7 +3,7 @@
       <div class="col-12">
         <div class="card">
           <div class="field">
-                <Dropdown  v-model="roleSelected"  :options="role" optionLabel="name" optionValue="id" placeholder="Select Role" />
+                <Dropdown :filter="true" @change="getData" v-model="selectedRole" :options="role" optionLabel="name" optionValue="id" placeholder="Select Role" />
             </div>
           <div v-if="!loading && TableData" class="CutomResponsiveTable table-container">
             <DataTable v-if="TableData" ref="table" :value="TableData" dataKey="id">
@@ -118,19 +118,12 @@
   const editDialog = ref(false);
   const submitted = ref(false);
   
-  const makeEntry = reactive({
-    page_id: "",
-    page_title: "",
-    page_meta_tags: null,
-    page_description: "",
-  });
-  
-  const getTableData = async () => {
+  const getTableData = async (role) => {
     loading.value = true;
     try {
       const response = await makeCustomRequest({
         url :"api/getModules",
-        method : "GET" 
+        method : "GET"
       });
       if (response.success) {
         TableData.value = response.data;
@@ -145,55 +138,7 @@
     }
   };
   
-  const editEntryOpen = (pageData) => {
-    makeEntry.page_id = pageData.id;
-    makeEntry.page_title = pageData.page_title;
-    makeEntry.page_meta_tags = pageData.meta_tags;
-    makeEntry.page_description = pageData.description;
-    editDialog.value = true;
-  };
-  
-  const hideDialog = () => {
-    editDialog.value = false;
-  };
-  
-  const updatePlan = async () => {
-    submitted.value = true;
-    if (makeEntry.page_title && makeEntry.page_meta_tags) {
-      const url = "api/updateMetaTags";
-  
-      try {
-        const response = await makeCustomRequest({
-          url: url,
-          method: "POST",
-          body: {
-            page_id: makeEntry.page_id,
-            title: makeEntry.page_title,
-            meta_tags: makeEntry.page_meta_tags,
-            description: makeEntry.page_description,
-          },
-        });
-        if (response) {
-          toast.add({
-            severity: "success",
-            summary: "Updated successfully",
-            life: 3000,
-          });
-          hideDialog();
-          await getTableData();
-        } else {
-          toast.add({ severity: "error", summary: "Update failed", life: 3000 });
-        }
-      } catch (error) {
-        toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
-      } finally {
-        submitted.value = false;
-      }
-    }
-  };
-  
   onMounted(() => {
-    // getTableData();
     getRoleData();
   });
   const role = ref([]);
@@ -205,7 +150,11 @@
   });
   role.value = responserole.data.data;
 }
-  </script>
+const selectedRole = ref(null);
+const getData = () => {
+  getTableData(selectedRole.value);
+}; 
+</script>
   
   <style lang="scss">
   @media (max-width: 768px) {
