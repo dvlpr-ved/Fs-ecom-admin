@@ -68,6 +68,7 @@ const model = ref([
       {
         label: "Manage Reports",
         icon: "pi pi-flag",
+        expanded : true,
         items: [
           {
             label: "Orders Report",
@@ -75,12 +76,26 @@ const model = ref([
             to: "/reports/ordersreport",
           },
           {
-            label: "stock report",
+            label: "Product wise stock report",
             icon: "pi pi-chart-line",
             to: "/reports/stockreport",
           },
+          {
+            label: "SKU wise stock report",
+            icon: "pi pi-chart-line",
+            to: "/reports/skustockreport",
+          },
+          {
+            label: "Seller wise stock report",
+            icon: "pi pi-chart-line",
+            to: "/reports/sellersalereport",
+          },
+          {
+            label: "Subscriptions Expiry Report",
+            icon: "pi pi-chart-line",
+            to: "/reports/subscriptionPlanReport",
+          },
         ],
-        expanded: false,
       },
       {
         label: "Manage Permissions",
@@ -106,12 +121,11 @@ const toggleReports = (item) => {
         @click="item.items && toggleReports(item)"
       >
       </app-menu-item>
-      <ul v-if="item.items && item.expanded">
+      <ul v-else-if="item.items && item.expanded">
         <li v-for="(subItem, j) in item.items" :key="subItem.label">
           <app-menu-item :item="subItem" :index="j"></app-menu-item>
         </li>
       </ul>
-      <li v-if="item.separator" class="menu-separator"></li>
     </template>
   </ul>
 </template>

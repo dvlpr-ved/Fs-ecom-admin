@@ -2,6 +2,12 @@
 import Calendar from "primevue/calendar";
 import { useToast } from "primevue/usetoast";
 
+const {filters} = defineProps({
+  filters : {
+    type : Object,
+    default : {from_date : '' , to_date : '' , 'product_id' : '' , 'category_id' : '' , 'user_id' : '' , 'plan_id' : ''}
+  }
+});
 const toast = useToast();
 const showToast = (message) => {
   toast.add({ severity: "info", detail: message, life: 3000 });
@@ -9,13 +15,11 @@ const showToast = (message) => {
 
 const isLoading = ref(false);
 const pluckProductsList = ref([]);
-const pluckSelectedProduct = ref(null);
 const pluckSellerList = ref([]);
-const pluckSellerSelected = ref(null);
 const pluckCategoryList = ref([]);
-const pluckCategorySelected = ref(null);
 const pluckPlansyList = ref([]);
-const pluckPlansSelected = ref(null);
+
+const emit = defineEmits(['filter']);
 
 const fetchData = async (url, listRef) => {
   isLoading.value = true;
@@ -34,75 +38,96 @@ const fetchData = async (url, listRef) => {
 };
 
 const fetchAllData = () => {
-  fetchData("api/pluckProducts", pluckProductsList);
-  fetchData("api/pluckSeller", pluckSellerList);
-  fetchData("api/pluckCategory", pluckCategoryList);
-  fetchData("api/pluckPlans", pluckPlansyList);
+  if(filters.hasOwnProperty('product_id')){
+    fetchData("api/pluckProducts", pluckProductsList);
+  }
+  if(filters.hasOwnProperty('user_id')){
+    fetchData("api/pluckSeller", pluckSellerList);
+  }
+  if(filters.hasOwnProperty('category_id')){
+    fetchData("api/pluckCategory", pluckCategoryList);
+  }
+  if(filters.hasOwnProperty('plan_id')){
+    fetchData("api/pluckPlans", pluckPlansyList);
+  }
 };
 
-onMounted(fetchAllData);
+onMounted(() => {
+  fetchAllData();
+});
 </script>
 
 <template>
   <div class="reprotFiltersDiv">
     <div class="dateFilter card">
-      <span v-if="isLoading">
+      <div class="text-center" v-if="isLoading">
         <i class="pi pi-spin pi-spinner text-5xl"></i>
-      </span>
-      <div class="flex flex-wrap gap-4 lg:mb-4 mb-2">
-        <div class="col-3">
-          <span>From Date</span>
-          <Calendar v-model="date" dateFormat="dd/mm/yy" showIcon />
-        </div>
-        <div class="col-3">
-          <span>To Date</span>
-          <Calendar v-model="date" dateFormat="dd/mm/yy" showIcon />
-        </div>
       </div>
-
-      <div class="flex flex-wrap gap-4">
-        <div class="col-2" style="overflow: hidden">
+      <div v-else class="feild grid gap-1 mt-2">
+        <div class="field lg:col-3 col-12">
+          <label>From Date</label><br>
+          <Calendar v-model="filters.from_date" dateFormat="yy-mm-dd" showIcon />
+        </div>
+        <div class="field lg:col-3 col-12">
+          <label>To Date</label><br>
+          <Calendar v-model="filters.to_date" dateFormat="yy-mm-dd" showIcon />
+        </div>
+        <div v-if="filters.hasOwnProperty('product_id')" class="field lg:col-5 col-12">
+          <label>Product</label>
           <Dropdown
-            v-model="pluckSelectedProduct"
+            v-model="filters.product_id"
+            style="width:100%"
+            :laoding="true"
             :options="pluckProductsList"
             optionLabel="name"
             optionValue="id"
             placeholder="Select Product"
           />
         </div>
-        <div class="col-2">
+        <div v-if="filters.hasOwnProperty('category_id')" class="field lg:col-3 col-12">
+          <label>Categgory</label><br>
           <Dropdown
-            v-model="pluckSellerSelected"
-            :options="pluckSellerList"
-            optionLabel="name"
-            optionValue="id"
-            placeholder="Select Sellers"
-          />
-        </div>
-        <div class="col-2">
-          <Dropdown
-            v-model="pluckCategorySelected"
+            v-model="filters.category_id"
+            style="width: 100%;"
             :options="pluckCategoryList"
             optionLabel="name"
             optionValue="id"
             placeholder="Select Category"
           />
         </div>
-        <div class="col-2">
+        <div v-if="filters.hasOwnProperty('user_id')" class="field lg:col-3 col-12">
+          <label>Seller</label><br>
           <Dropdown
-            v-model="pluckPlansSelected"
+            v-model="filters.user_id"
+            style="width: 100%;"
+            :options="pluckSellerList"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Select Sellers"
+          />
+        </div>        
+        <div v-if="filters.hasOwnProperty('plan_id')" class="feild lg:col-3 col-12">
+          <label>Subscription Plan</label><br>
+          <Dropdown
+            v-model="filters.plan_id"
+            style="width: 100%"
             :options="pluckPlansyList"
+            class="mt-2"
             optionLabel="title"
             optionValue="id"
             placeholder="Select Plan"
-          />
+          />          
         </div>
+        <div class="feild lg:col-2 col-12 mt-3">
+          <Button
+              label="Filter"
+              icon="pi pi-filter"
+              class="mr-2 mt-2"
+              @click="emit('filter')"
+              severity="success"
+            />
+        </div>        
       </div>
     </div>
   </div>
 </template>
-
-<style lang="scss">
-.reprotFiltersDiv {
-}
-</style>

@@ -163,6 +163,10 @@ const getData = () => {
   getTableData(selectedRole.value);
 }; 
 const updatePermissions =async () => {
+  if(!selectedRole.value){
+    toast.add({ severity: 'error', summary: 'Please Select Role', life: 3000 });
+    return;
+  }
   const save = await makeCustomRequest({
     url : 'api/updatePermissions',
     method : 'POST',

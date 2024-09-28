@@ -41,7 +41,8 @@
 import { useLayout } from '@/layouts/composables/layout';
 import { ref, computed } from 'vue';
 import AppConfig from '@/layouts/AppConfig.vue';
-import makeCustomRequest from '../composables/makeCustomRequest';
+import { useAuthStore } from './stores/AuthStore';
+const authsstore = useAuthStore();
 const { layoutConfig } = useLayout();
 const email = ref('');
 const password = ref('');
@@ -69,7 +70,6 @@ const loginUser = async () => {
 }
     const makeLoginRequest = async () => {
         const xsrfToken =await useCookie('XSRF-TOKEN');
-        console.log(xsrfToken.value);
         const login = await $fetch('https://fashtsaly.com/API/public/api/login' , {
             method:'POST',
             headers:{
@@ -82,8 +82,7 @@ const loginUser = async () => {
             }
         });
         if(login.success){
-            localStorage.setItem('OAuth-token' , login.token);
-            navigateTo('/');
+            authsstore.Login(login);
         }
         errors.value.push(login.msg ? login.msg : '');
     }
