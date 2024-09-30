@@ -27,6 +27,10 @@ export const useAuthStore = defineStore('auth', {
             this.makeUserLoggedIn();
             this.makeUserSignedUp();
             navigateTo('/');
+        },
+        Logout(){
+            localStorage.removeItem('OAuth-token');
+            navigateTo('/login');
         }
     }
 });

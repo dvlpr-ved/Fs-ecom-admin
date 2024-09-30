@@ -2,6 +2,13 @@
 import { ref, onBeforeMount, watch } from 'vue';
 import { useLayout } from './composables/layout';
 import { useRoute } from 'vue-router';
+
+const permissionsStore = usePermissionsStore(); 
+const permissions = ref([]);
+onBeforeMount(() => {
+    permissions.value = permissionsStore.userPermissions || [];
+});
+
 const route = useRoute();
 const { layoutConfig, layoutState, setActiveMenuItem, onMenuToggle } = useLayout();
 const props = defineProps({
@@ -70,12 +77,12 @@ const checkActiveRoute = (item) => {
         <div v-if="root && item.visible !== false" class="layout-menuitem-root-text">
             {{ item.label }}
         </div>
-        <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item, index)" :class="item.class" :target="item.target" tabindex="0">
+        <a  v-if="(!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item, index)" :class="item.class" :target="item.target" tabindex="0">
             <i :class="item.icon" class="layout-menuitem-icon"></i>
             <span class="layout-menuitem-text">{{ item.label }}</span>
             <i v-if="item.items" class="pi pi-fw pi-angle-down layout-submenu-toggler"></i>
         </a>
-        <router-link v-if="item.to && !item.items && item.visible !== false" @click="itemClick($event, item, index)" :class="[item.class, { 'active-route': checkActiveRoute(item) }]" tabindex="0" :to="item.to">
+        <router-link v-if="item.to && !item.items && item.visible !== false && permissions.indexOf(item.to) > -1" @click="itemClick($event, item, index)" :class="[item.class, { 'active-route': checkActiveRoute(item) }]" tabindex="0" :to="item.to">
             <i :class="item.icon" class="layout-menuitem-icon"></i>
             <span class="layout-menuitem-text">{{ item.label }}</span>
             <i v-if="item.items" class="pi pi-fw pi-angle-down layout-submenu-toggler"></i>

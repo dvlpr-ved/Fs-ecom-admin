@@ -8,6 +8,7 @@ export default defineNuxtConfig({
         port: 3001, // default: 3000
     },
     typescript: false,
+    plugins: ['~/plugins/pinia.ts'], 
     app: {
         head: {
             title: 'fashtsaly dashboard',
@@ -26,7 +27,10 @@ export default defineNuxtConfig({
           API_BASE_URL: 'https://fashtsaly.com/API/public/',
         },
     },
-    modules: ['nuxt-primevue'],
+    modules: ['nuxt-primevue' , '@pinia/nuxt'],
+    pinia: {
+        storesDirs: ['./stores/**', './custom-folder/stores/**'],
+    },
     primevue: {
         options: { ripple: true },
         components: {

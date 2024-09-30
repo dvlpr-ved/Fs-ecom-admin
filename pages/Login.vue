@@ -41,7 +41,6 @@
 import { useLayout } from '@/layouts/composables/layout';
 import { ref, computed } from 'vue';
 import AppConfig from '@/layouts/AppConfig.vue';
-import { useAuthStore } from './stores/AuthStore';
 const authsstore = useAuthStore();
 const { layoutConfig } = useLayout();
 const email = ref('');

@@ -102,6 +102,11 @@ const model = ref([
         icon: "pi pi-file-export",
         to: "/permissions",
       },
+      {
+        label: "Seller Requests",
+        icon: "pi pi-file-export",
+        to: "/SellerRequests",
+      }
     ],
   },
 ]);
@@ -114,18 +119,20 @@ const toggleReports = (item) => {
 <template>
   <ul class="layout-menu">
     <template v-for="(item, i) in model" :key="item.label">
-      <app-menu-item
-        v-if="!item.separator"
-        :item="item"
-        :index="i"
-        @click="item.items && toggleReports(item)"
-      >
-      </app-menu-item>
-      <ul v-else-if="item.items && item.expanded">
-        <li v-for="(subItem, j) in item.items" :key="subItem.label">
-          <app-menu-item :item="subItem" :index="j"></app-menu-item>
-        </li>
-      </ul>
+      <div>
+        <app-menu-item
+          v-if="!item.separator"
+          :item="item"
+          :index="i"
+          @click="item.items && toggleReports(item)"
+        >
+        </app-menu-item>
+        <ul v-else-if="item.items && item.expanded">
+          <li v-for="(subItem, j) in item.items" :key="subItem.label">
+            <app-menu-item :item="subItem" :index="j"></app-menu-item>
+          </li>
+        </ul>
+      </div>
     </template>
   </ul>
 </template>
