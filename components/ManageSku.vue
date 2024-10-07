@@ -31,10 +31,8 @@
         </div>
         <div class="col-6">
           <label for="color">Size <span class="text-red-400">*</span></label>
-          <InputNumber
-            :minFractionDigits="0"
+          <InputText
             class="mt-2"
-            :maxFractionDigits="5"
             v-model.trim="localData[row].size"
             required="true"
             autofocus

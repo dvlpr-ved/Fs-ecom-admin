@@ -94,7 +94,7 @@ const model = ref([
             label: "Subscriptions Expiry Report",
             icon: "pi pi-chart-line",
             to: "/reports/subscriptionPlanReport",
-          },
+          },          
         ],
       },
       {
@@ -106,7 +106,7 @@ const model = ref([
         label: "Seller Requests",
         icon: "pi pi-file-export",
         to: "/SellerRequests",
-      }
+      }      
     ],
   },
 ]);

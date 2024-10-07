@@ -61,14 +61,16 @@
         </div> -->
         <div class="grid" v-if="sortedPreUploads.length > 0">
             <div v-for="upload in sortedPreUploads" class="col-2 relative">
-                <i v-if="selectedUrls.includes(upload.source)" class="pi pi-check bg-primary p-1 border-round absolute"></i>
-                <span class="bg-primary p-1 border-round absolute bottom-0">{{ upload.code }}</span>
-                <i @click="copyFileSource(upload.source)" class="pi pi-copy bg-primary p-1 border-round absolute" style="right: 20px;"></i>
-                <div class="w-9rem h-9rem">
-                    <img :title="upload.name" @click="ChooseFile(upload)" class="w-full h-full border-round-lg" :src="upload.source"></img>
+                    <i v-if="selectedUrls.includes(upload.source)" class="pi pi-check bg-primary p-1 border-round absolute"></i>
+                    <span class="bg-primary p-1 border-round absolute bottom-0">{{ upload.code }}</span>
+                    <i @click="copyFileSource(upload.source)" class="pi pi-copy bg-primary p-1 border-round absolute" style="right: 20px;"></i>
+                    <i @click="deleteFileSource(upload.id , upload)" class="pi pi-trash bg-primary p-1 border-round absolute" style="right: 80px;"></i>
+                    <div class="w-9rem h-9rem">
+                        <img :title="upload.name" @click="ChooseFile(upload.id)" class="w-full h-full border-round-lg" :src="upload.source"></img>
+                    </div>
                 </div>
-            </div>            
-        </div>
+            </div>    
+      <TableFooter :totalPages="totalPages" v-model="page"></TableFooter>
     </Dialog>
 </template>
 
@@ -107,13 +109,21 @@ const preUploads = ref([]);
 onMounted(() => {
     loadImages();
 });
+const totalPages = ref(0);
+const page = ref(1);
+watch(page , () => {
+    loadImages();
+});
 const loadImages =async () => {
     if (process.client) {
         const res = await makeCustomRequest({
-            url: 'api/getImages',
+            url: `api/getImages?page=${page.value}`,
             method: 'POST',
         });
         if (res.success) {
+            const total_records = res.imagesquery.total;
+            const per_page = res.imagesquery.per_page;
+            totalPages.value = Math.ceil(total_records / per_page);
             preUploads.value = res.imagesquery.data;
         }
     }
@@ -233,7 +243,21 @@ const customBase64Uploader = async (event) => {
         };
     }
 };
-
+const deleteFileSource =async (id , image) => {
+    if(id){
+        const response =await makeCustomRequest({
+            url : `api/deleteProductImage`,
+            method : 'POST',
+            body : {
+                id : id
+            }  
+        });
+        if(response.success){
+            preUploads.value = preUploads.value.filter((upload) => upload.id !== id);
+            toast.add({ severity: "success", summary: "Deleted successfully", life: 3000 });
+        }
+    }
+}
 const copyFileSource = async (source) => {
     try {
         await navigator.clipboard.writeText(source);

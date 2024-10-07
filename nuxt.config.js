@@ -27,7 +27,7 @@ export default defineNuxtConfig({
           API_BASE_URL: 'https://fashtsaly.com/API/public/',
         },
     },
-    modules: ['nuxt-primevue' , '@pinia/nuxt'],
+    modules: ['nuxt-primevue', '@pinia/nuxt', 'nuxt-tiptap-editor'],
     pinia: {
         storesDirs: ['./stores/**', './custom-folder/stores/**'],
     },
