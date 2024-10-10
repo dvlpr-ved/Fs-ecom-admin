@@ -1,7 +1,7 @@
 <template>
     <Dialog v-model:visible="props.visible" :style="{ width: '90%', height:'100%' }" position="top">
         <template #header>
-            <i @click="handleClose" class="pi pi-check p-2 bg-teal-400 border-round text-white"></i>
+            <i @click="handleClose" class="pi pi pi-times p-2 bg-teal-400 border-round text-white"></i>
         </template>
         <template #closeicon>
             &nbsp;
