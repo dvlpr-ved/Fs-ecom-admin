@@ -1,7 +1,7 @@
 <template>
     <Dialog v-model:visible="props.visible" :style="{ width: '90%', height:'100%' }" position="top">
         <template #header>
-            <i @click="handleClose" class="pi pi pi-times p-2 bg-teal-400 border-round text-white"></i>
+            <i @click="handleClose" class="pi pi-check p-2 bg-teal-400 border-round text-white"></i>
         </template>
         <template #closeicon>
             &nbsp;
@@ -66,7 +66,7 @@
                     <i @click="copyFileSource(upload.source)" class="pi pi-copy bg-primary p-1 border-round absolute" style="right: 20px;"></i>
                     <i @click="deleteFileSource(upload.id , upload)" class="pi pi-trash bg-primary p-1 border-round absolute" style="right: 80px;"></i>
                     <div class="w-9rem h-9rem">
-                        <img :title="upload.name" @click="ChooseFile(upload.id)" class="w-full h-full border-round-lg" :src="upload.source"></img>
+                        <img :title="upload.name" @click="ChooseFile(upload)" class="w-full h-full border-round-lg" :src="upload.source"></img>
                     </div>
                 </div>
             </div>    
