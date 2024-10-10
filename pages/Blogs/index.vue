@@ -1,136 +1,203 @@
 <template>
   <div>
-    <div v-if="editor">
-      <button
+    <div v-if="editor" class="flex gap-2 flex-wrap">
+      <Button
         @click="editor.chain().focus().toggleBold().run()"
         :disabled="!editor.can().chain().focus().toggleBold().run()"
         :class="{ 'is-active': editor.isActive('bold') }"
-      >
-        bold
-      </button>
-      <button
+        label="Bold"
+        icon="pi pi-bold"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().toggleItalic().run()"
         :disabled="!editor.can().chain().focus().toggleItalic().run()"
         :class="{ 'is-active': editor.isActive('italic') }"
-      >
-        italic
-      </button>
-      <button
+        label="Italic"
+        icon="pi pi-italic"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().toggleStrike().run()"
         :disabled="!editor.can().chain().focus().toggleStrike().run()"
         :class="{ 'is-active': editor.isActive('strike') }"
-      >
-        strike
-      </button>
-      <button
+        label="Strike"
+        icon="pi pi-strikethrough"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().toggleCode().run()"
         :disabled="!editor.can().chain().focus().toggleCode().run()"
         :class="{ 'is-active': editor.isActive('code') }"
-      >
-        code
-      </button>
-      <button @click="editor.chain().focus().unsetAllMarks().run()">
-        clear marks
-      </button>
-      <button @click="editor.chain().focus().clearNodes().run()">
-        clear nodes
-      </button>
-      <button
+        label="Code"
+        icon="pi pi-code"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
+        @click="editor.chain().focus().unsetAllMarks().run()"
+        label="Clear Marks"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
+        @click="editor.chain().focus().clearNodes().run()"
+        label="Clear Nodes"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().setParagraph().run()"
         :class="{ 'is-active': editor.isActive('paragraph') }"
-      >
-        paragraph
-      </button>
-      <button
-        @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
-      >
-        h1
-      </button>
-      <button
-        @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
-      >
-        h2
-      </button>
-      <button
-        @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
-      >
-        h3
-      </button>
-      <button
-        @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 4 }) }"
-      >
-        h4
-      </button>
-      <button
-        @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 5 }) }"
-      >
-        h5
-      </button>
-      <button
-        @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 6 }) }"
-      >
-        h6
-      </button>
-      <button
+        label="Paragraph"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
+        v-for="level in [1, 2, 3, 4, 5, 6]"
+        :key="level"
+        @click="editor.chain().focus().toggleHeading({ level }).run()"
+        :class="{ 'is-active': editor.isActive('heading', { level }) }"
+        :label="'H' + level"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().toggleBulletList().run()"
         :class="{ 'is-active': editor.isActive('bulletList') }"
-      >
-        bullet list
-      </button>
-      <button
+        label="Bullet List"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().toggleOrderedList().run()"
         :class="{ 'is-active': editor.isActive('orderedList') }"
-      >
-        ordered list
-      </button>
-      <button
+        label="Ordered List"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().toggleCodeBlock().run()"
         :class="{ 'is-active': editor.isActive('codeBlock') }"
-      >
-        code block
-      </button>
-      <button
+        label="Code Block"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().toggleBlockquote().run()"
         :class="{ 'is-active': editor.isActive('blockquote') }"
-      >
-        blockquote
-      </button>
-      <button @click="editor.chain().focus().setHorizontalRule().run()">
-        horizontal rule
-      </button>
-      <button @click="editor.chain().focus().setHardBreak().run()">
-        hard break
-      </button>
-      <button
+        label="Blockquote"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
+        @click="editor.chain().focus().setHorizontalRule().run()"
+        label="Horizontal Rule"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
+        @click="editor.chain().focus().setHardBreak().run()"
+        label="Hard Break"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().undo().run()"
         :disabled="!editor.can().chain().focus().undo().run()"
-      >
-        undo
-      </button>
-      <button
+        label="Undo"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
         @click="editor.chain().focus().redo().run()"
         :disabled="!editor.can().chain().focus().redo().run()"
-      >
-        redo
-      </button>
+        label="Redo"
+        class="p-button-sm p-button-outlined"
+      />
+      <Button
+        label="Upload"
+        icon="pi pi-upload"
+        class="mr-2"
+        severity="success"
+        @click="imageUploaderProduct = true"
+      />
     </div>
-    <TiptapEditorContent :editor="editor" />
+    <div class="editablediv border bg-gray-100 p-5 mt-5">
+      <input
+        type="text"
+        v-model="makeEntry.title"
+        placeholder="Enter Blog Title"
+        class="p-inputtext p-component mb-4"
+      />
+      <TiptapEditorContent :editor="editor" />
+      <Button
+        @click="submitBlogPost"
+        :disabled="!isFormValid"
+        label="Add Blog"
+        class="p-button-lg p-button-fill"
+      />
+    </div>
   </div>
+  <ImageUploader
+    :visible="imageUploaderProduct"
+    v-model="makeEntry.images"
+    @close="imageUploaderProduct = false"
+  ></ImageUploader>
 </template>
 
 <script setup>
 const editor = useEditor({
-  content: "<p>I'm running Tiptap with Vue.js. 🎉</p>",
+  content: "<p>Blog Content Here...</p>",
   extensions: [TiptapStarterKit],
 });
 
+const imageUploaderProduct = ref(false);
+const makeEntry = reactive({ title: "", content: "", images: [] });
+
+const isFormValid = computed(() => {
+  const content = editor;
+  return makeEntry.title.trim() !== "" && content !== "<p><br></p>";
+});
+
+const submitBlogPost = async () => {  
+  const element = document.querySelectorAll(".tiptap")[0];
+  const content = element.innerHTML;
+  const payload = {
+    title: makeEntry.title,
+    content: content,
+    images: makeEntry.images,
+  };
+
+  return false;
+
+  try {
+    const response = await fetch("https://fashtsaly.com/API/public/api/Blogs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok: " + response);
+    }
+
+    const result = await response.json();
+    console.log("Success:", result);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
 onBeforeUnmount(() => {
-  unref(editor).destroy();
+  editor.value.destroy();
 });
 </script>
+
+<style lang="scss">
+.editablediv {
+  min-height: 300px;
+  .ProseMirror {
+    min-height: 300px;
+    height: 100%;
+    border: 1px solid #ddd;
+  }
+  .p-inputtext {
+    max-width: 500px;
+    width: 100%;
+  }
+  .tiptap.ProseMirror {
+    border: 0;
+  }
+}
+</style>
