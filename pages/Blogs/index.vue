@@ -1,203 +1,132 @@
 <template>
-  <div>
-    <div v-if="editor" class="flex gap-2 flex-wrap">
-      <Button
-        @click="editor.chain().focus().toggleBold().run()"
-        :disabled="!editor.can().chain().focus().toggleBold().run()"
-        :class="{ 'is-active': editor.isActive('bold') }"
-        label="Bold"
-        icon="pi pi-bold"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().toggleItalic().run()"
-        :disabled="!editor.can().chain().focus().toggleItalic().run()"
-        :class="{ 'is-active': editor.isActive('italic') }"
-        label="Italic"
-        icon="pi pi-italic"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().toggleStrike().run()"
-        :disabled="!editor.can().chain().focus().toggleStrike().run()"
-        :class="{ 'is-active': editor.isActive('strike') }"
-        label="Strike"
-        icon="pi pi-strikethrough"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().toggleCode().run()"
-        :disabled="!editor.can().chain().focus().toggleCode().run()"
-        :class="{ 'is-active': editor.isActive('code') }"
-        label="Code"
-        icon="pi pi-code"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().unsetAllMarks().run()"
-        label="Clear Marks"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().clearNodes().run()"
-        label="Clear Nodes"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().setParagraph().run()"
-        :class="{ 'is-active': editor.isActive('paragraph') }"
-        label="Paragraph"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        v-for="level in [1, 2, 3, 4, 5, 6]"
-        :key="level"
-        @click="editor.chain().focus().toggleHeading({ level }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level }) }"
-        :label="'H' + level"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().toggleBulletList().run()"
-        :class="{ 'is-active': editor.isActive('bulletList') }"
-        label="Bullet List"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().toggleOrderedList().run()"
-        :class="{ 'is-active': editor.isActive('orderedList') }"
-        label="Ordered List"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().toggleCodeBlock().run()"
-        :class="{ 'is-active': editor.isActive('codeBlock') }"
-        label="Code Block"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().toggleBlockquote().run()"
-        :class="{ 'is-active': editor.isActive('blockquote') }"
-        label="Blockquote"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().setHorizontalRule().run()"
-        label="Horizontal Rule"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().setHardBreak().run()"
-        label="Hard Break"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().undo().run()"
-        :disabled="!editor.can().chain().focus().undo().run()"
-        label="Undo"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        @click="editor.chain().focus().redo().run()"
-        :disabled="!editor.can().chain().focus().redo().run()"
-        label="Redo"
-        class="p-button-sm p-button-outlined"
-      />
-      <Button
-        label="Upload"
-        icon="pi pi-upload"
-        class="mr-2"
-        severity="success"
-        @click="imageUploaderProduct = true"
-      />
-    </div>
-    <div class="editablediv border bg-gray-100 p-5 mt-5">
-      <input
-        type="text"
-        v-model="makeEntry.title"
-        placeholder="Enter Blog Title"
-        class="p-inputtext p-component mb-4"
-      />
-      <TiptapEditorContent :editor="editor" />
-      <Button
-        @click="submitBlogPost"
-        :disabled="!isFormValid"
-        label="Add Blog"
-        class="p-button-lg p-button-fill"
-      />
+  <div class="grid">
+    <div class="col-12">
+      <div class="card">
+        <div v-if="!loading && TableData" class="CustomResponsiveTable table-container">
+          <DataTable v-if="TableData" ref="table" :value="TableData" dataKey="id">
+            <template #header>
+              <div
+                class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
+              >
+                <h5 class="m-0">Manage Blog Posts</h5>
+                <Button
+                  @click="navigateToAdd"
+                  severity="Edit"
+                  icon="pi pi-plus"
+                  label="Add New Blog"
+                />
+              </div>
+            </template>
+            <Column field="id" header="ID" headerStyle="width:auto; min-width:2rem;">
+              <template #body="slotProps">
+                <span class="p-column-title">ID</span>
+                {{ slotProps.data.id }}
+              </template>
+            </Column>
+            <Column
+              field="title"
+              header="Title"
+              headerStyle="width:auto; min-width:15rem;"
+            >
+              <template #body="slotProps">
+                <span class="p-column-title">Title</span>
+                {{ slotProps.data.title }}
+              </template>
+            </Column>
+            <Column
+              field="created date"
+              header="created date"
+              headerStyle="width:auto; min-width:15rem;"
+            >
+              <template #body="slotProps">
+                <span class="p-column-title">Title</span>
+                {{ slotProps.data.created_at }}
+              </template>
+            </Column>
+            <Column header="Actions" headerStyle="width:auto; min-width:8rem;">
+              <template #body="slotProps">
+                <span class="p-column-title">Actions</span>
+                <div class="flex gap-2">
+                  <Button
+                    @click="editBlog(slotProps.data.id)"
+                    severity="Edit"
+                    icon="pi pi-pencil"
+                  />
+                  <Button
+                    @click="deleteBlog(slotProps.data.id)"
+                    severity="warning"
+                    icon="pi pi-trash"
+                  />
+                </div>
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+
+        <div
+          v-else
+          class="flex items-center justify-center text-primary"
+          style="justify-content: center"
+        >
+          <span><i class="pi pi-spin pi-spinner text-8xl"></i></span>
+        </div>
+      </div>
     </div>
   </div>
-  <ImageUploader
-    :visible="imageUploaderProduct"
-    v-model="makeEntry.images"
-    @close="imageUploaderProduct = false"
-  ></ImageUploader>
 </template>
 
 <script setup>
-const editor = useEditor({
-  content: "<p>Blog Content Here...</p>",
-  extensions: [TiptapStarterKit],
-});
+import { useToast } from "primevue/usetoast";
+const toast = useToast();
+const TableData = ref([]);
+const loading = ref(false);
 
-const imageUploaderProduct = ref(false);
-const makeEntry = reactive({ title: "", content: "", images: [] });
-
-const isFormValid = computed(() => {
-  const content = editor;
-  return makeEntry.title.trim() !== "" && content !== "<p><br></p>";
-});
-
-const submitBlogPost = async () => {  
-  const element = document.querySelectorAll(".tiptap")[0];
-  const content = element.innerHTML;
-  const payload = {
-    title: makeEntry.title,
-    content: content,
-    images: makeEntry.images,
-  };
-
-  return false;
-
+const getTableData = async () => {
+  loading.value = true;
   try {
-    const response = await fetch("https://fashtsaly.com/API/public/api/Blogs", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    const response = await makeCustomRequest({
+      url: "api/Blogs",
+      method: "GET",
     });
-
-    if (!response.ok) {
-      throw new Error("Network response was not ok: " + response);
+    if (response) {
+      TableData.value = response;
+    } else {
+      toast.add({ severity: "error", summary: "Server Error", life: 3000 });
     }
-
-    const result = await response.json();
-    console.log("Success:", result);
   } catch (error) {
-    console.error("Error:", error);
+    toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
+  } finally {
+    loading.value = false;
   }
 };
 
-onBeforeUnmount(() => {
-  editor.value.destroy();
+const editBlog = (id) => {};
+
+const navigateToAdd = () => {
+  navigateTo("/blogs/manageblog");
+};
+
+const deleteBlog = async (id) => {
+  try {
+    const response = await makeCustomRequest({
+      url: `api/Blogs/${id}`,
+      method: "GET",
+    });
+    if (response) {
+      getTableData();
+    }
+  } catch {
+    toast.add({ severity: "warn", summary: `Delete blog ID: ${id}`, life: 3000 });
+  }
+};
+
+onMounted(() => {
+  getTableData();
 });
 </script>
 
 <style lang="scss">
-.editablediv {
-  min-height: 300px;
-  .ProseMirror {
-    min-height: 300px;
-    height: 100%;
-    border: 1px solid #ddd;
-  }
-  .p-inputtext {
-    max-width: 500px;
-    width: 100%;
-  }
-  .tiptap.ProseMirror {
-    border: 0;
-  }
+@media (max-width: 768px) {
+  // Add responsive styles here
 }
 </style>
