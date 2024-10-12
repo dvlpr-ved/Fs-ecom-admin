@@ -1,4 +1,5 @@
 <script setup>
+import Dropdown from "primevue/dropdown";
 import { useToast } from "primevue/usetoast";
 const toast = useToast();
 const filters = ref(getFilter(["product", "user", "category"]));
@@ -60,7 +61,62 @@ const showDetails = async (order_id, details = 1) => {
     });
   }
 };
+const order_status = ref('');
+const order_status_id = ref('');
+const orderStatusShown = ref(false);
+const order_traking_status = ref('');
+const order_status_options = ref([
+  {
+    label : "Ordered",
+    value : 1,
+  },
+  {
+    label : "Ready to dispatch",
+    value : 2,
+  },
+  {
+    label : "Shipped",
+    value : 3,    
+  },
+  {
+    label : "Complete",
+    value : 4,    
+  },
+  {
+    label : "Return/Exchnage",
+    value : 5,    
+  }     
+]);
+const openOrderStatus = (data) => {
+  order_status_id.value = data.id;
+  order_status.value = data.order_status;
+  order_traking_status.value = data.tracking_status;
+  orderStatusShown.value = true;
+}
+const openStatusChnageModal = () => {
 
+}
+const updateOrderStatus =async (id) => {
+  const response = await makeCustomRequest({
+    url : 'api/changeOrderStatus',
+    method : 'POST',
+    body : {
+      order_id : order_status_id.value,
+      status : order_status.value,
+      tracking_status : order_traking_status.value
+    }
+  });
+  if(response.success){
+  orderStatusShown.value = false;  
+  getTableData();  
+    toast.add({ severity: "success", summary: "Updated successfully", life: 3000 });
+  }
+  else{
+  orderStatusShown.value = false;
+  getTableData();    
+    toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
+  }
+}
 watch((page) => {
   getTableData();
 });
@@ -221,6 +277,17 @@ onMounted(() => {
         ></Button>
       </template>
     </Column>
+    <Column field="title" header="Update Status" headerStyle="width:auto; min-width:10rem;">
+      <template #body="slotProps">
+        <span class="p-column-title">Update order status</span>
+        <Button
+          @click="openOrderStatus(slotProps.data)"
+          icon="pi pi-pencil"
+          rounded
+          severity=""
+        ></Button>
+      </template>
+    </Column>
     <template #footer>
       <TableFooter :totalPages="totalPages" v-model="page"></TableFooter>
     </template>
@@ -308,4 +375,32 @@ onMounted(() => {
       </Column>
     </DataTable>
   </Dialog>
+  <Dialog v-model:visible="orderStatusShown"
+          :style="{ width: '450px' }"
+          header="Update Order Status"
+          :modal="true"
+          class="p-fulid"
+        >
+        <div class="feild grid gap-1 mt-2">
+          <div class="col-12 feild">
+            <Dropdown
+                v-model="order_status"
+                :options="order_status_options"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select"
+                class="w-full"
+              />            
+          </div>
+          <div v-if="order_status == 2" class="col-12">
+            <textarea v-model="order_traking_status" rows="5" class="w-full"></textarea>
+          </div>
+        </div>
+          <template #footer>
+            <Button label="Cancel" icon="pi pi-times" class="mr-2" severity="danger" @click="orderStatusShown = false"/>
+            <Button label="Save" icon="pi pi-check" class="mr-2"severity="success"
+              @click="updateOrderStatus"
+            />
+          </template>          
+        </Dialog>  
 </template>
