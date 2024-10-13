@@ -98,6 +98,38 @@ const model = ref([
         ],
       },
       {
+        label: "Analytics",
+        icon: "pi pi-flag",
+        expanded : true,
+        items: [
+          {
+            label: "Customer Report",
+            icon: "pi pi-chart-line",
+            to: "/reports/customerReport",
+          },
+          {
+            label: "Subscriber Report",
+            icon: "pi pi-chart-line",
+            to: "/reports/subscriberReport",
+          },
+          {
+            label: "Sellers",
+            icon: "pi pi-chart-line",
+            to: "/reports/skustockreport",
+          },
+          {
+            label: "Vendors",
+            icon: "pi pi-chart-line",
+            to: "/reports/sellersalereport",
+          },
+          {
+            label: "Subscriptions Expiry Report",
+            icon: "pi pi-chart-line",
+            to: "/reports/subscriptionPlanReport",
+          },          
+        ],
+      },      
+      {
         label: "Manage Permissions",
         icon: "pi pi-file-export",
         to: "/permissions",

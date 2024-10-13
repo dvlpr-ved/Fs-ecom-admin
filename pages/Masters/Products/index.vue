@@ -33,6 +33,22 @@
                 severity="success"
                 @click="importDataShow"
               />
+              <Button
+                label="Repost Random 50 products"
+                icon="pi pi-cog"
+                class="mr-2"
+                :loading = "reposting"
+                severity="success"
+                @click="repostRandom"
+              />
+              <Button
+                label="Schedule Repost"
+                icon="pi pi-cog"
+                class="mr-2"
+                :loading = "scheduling"
+                severity="success"
+                @click="scheduleRepost"
+              />
             </div>
           </template>
         </Toolbar>
@@ -91,13 +107,23 @@
               {{ slotProps.data.created_at }}
             </template>
           </Column>
+          <Column
+            field="Parent"
+            header="Last posted at"
+            headerStyle="width:auto; min-width:10rem;"
+          >
+            <template #body="slotProps">
+              <span class="p-column-title">Last Posted at</span>
+              {{ slotProps.data.posted_date }}
+            </template>
+          </Column>
           <Column field="MRP" header="MRP" headerStyle="width:auto; min-width:10rem;">
             <template #body="slotProps">
               <span class="p-column-title">MRP</span>
               {{ slotProps.data.mrp ? slotProps.data.mrp : "" }}
             </template>
           </Column>
-          <Column field="Action" header="Action" headerStyle="min-width:10rem;">
+          <Column field="Action" header="Action" headerStyle="min-width:15rem;">
             <template #body="slotProps">
               <Button
                 icon="pi pi-pencil"
@@ -106,6 +132,13 @@
                 rounded
                 @click="editEntryOpen(slotProps.data)"
               />
+              <Button
+                icon="pi pi-refresh"
+                class="mr-2"
+                severity="success"
+                rounded
+                @click="repostRandom(slotProps.data)"
+              />              
               <Button
                 icon="pi pi-trash"
                 class="mt-2"
@@ -1014,5 +1047,50 @@ function generateRandomString(length) {
   }
 
   return result;
+}
+const rePostProduct =async (product) => {
+  const response = await makeCustomRequest({
+    url : 'api/repostSingleProduct',
+    method : 'POST',
+    body : {
+      product_id : product.id
+    }
+  }) 
+  if(response.success){
+    toast.add({ severity: "success", summary: "Reposted successfully", life: 3000 });
+  }
+  else{
+    toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
+  }
+}
+const reposting =  ref(false);
+const repostRandom = async () => {
+  reposting.value - true;
+  const response =  await makeCustomRequest({
+    url : 'api/repostRandomManual',
+    method : 'POST',
+  });
+  if(response.success){
+    toast.add({ severity: "success", summary: "Reposted successfully", life: 3000 });
+  }
+  else{
+    toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
+  }
+  reposting.value = false;
+}
+const scheduling =  ref(false);
+const scheduleRepost  =async () => {
+  scheduling.value - true;
+  const response =  await makeCustomRequest({
+    url : 'api/scheduleRepost',
+    method : 'POST',
+  });
+  if(response.success){
+    toast.add({ severity: "success", summary: "Scheduled successfully", life: 3000 });
+  }
+  else{
+    toast.add({ severity: "error", summary:response.msg ? response.msg : "Something went wrong", life: 3000 });
+  }
+  scheduling.value = false;
 }
 </script>

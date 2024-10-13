@@ -106,13 +106,17 @@
               rounded
               @click="createImageUploader = true"
             />
+            <label class="px-4" for="name">Show on Home</label>
+            <Checkbox class="mb-2"v-model="makeEntry.showHome" :binary="true" />
           </div>
+          <div class="feild">
           <ImageUploader
             single="true"
             :visible="createImageUploader"
             v-model="makeEntry.image"
             @close="createImageUploader = false"
           ></ImageUploader>
+          </div>
           <template #footer>
             <Button
               label="Cancel"
@@ -152,7 +156,7 @@
             >
           </div>
           <div class="field">
-            <label for="name">Image</label>
+            <label class="px-3" for="name">Image</label>
             <Button
               icon="pi pi-upload"
               class="mt-2 ml-2"
@@ -160,6 +164,8 @@
               rounded
               @click="editImageUploader = true"
             />
+            <label class="px-4" for="name">Show on Home</label>
+            <Checkbox class="mb-2"v-model="editEntry.showHome" :binary="true" />
           </div>
           <ImageUploader
             single="true"
@@ -265,6 +271,7 @@ const hideDialogEdit = () => {
 const makeEntry = reactive({
   name: "",
   image: [],
+  showHome : false
 });
 
 const saveEntry = async () => {
@@ -274,7 +281,7 @@ const saveEntry = async () => {
     const res = await makeCustomRequest({
       url: url,
       method: "POST",
-      body: { name: makeEntry.name, image: makeEntry.image[0].source },
+      body: { name: makeEntry.name, image: makeEntry.image[0].source,show_home : makeEntry.showHome },
     });
     if (res.res) {
       createDialog.value = false;
@@ -296,11 +303,13 @@ const editEntry = reactive({
   id: "",
   name: "",
   image: [],
+  showHome : false
 });
 
 const editEntryOpen = (en) => {
   editEntry.name = en.name;
   editEntry.id = en.id;
+  editEntry.showHome = en.show_home;
   const split = en.image ? en.image.split("/") : "";
   editEntry.image = en.image ? [{ source: en.image, name: split[split.length - 1] }] : [];
   editDialog.value = true;
@@ -314,7 +323,7 @@ const updateEntry = async () => {
     const res = await makeCustomRequest({
       url: url,
       method: "PATCH",
-      body: { name: editEntry.name, image: editEntry.image[0].source },
+      body: { name: editEntry.name, image: editEntry.image[0].source,show_home : editEntry.showHome },
     });
     if (res.res) {
       editDialog.value = false;

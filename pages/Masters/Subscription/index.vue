@@ -42,6 +42,16 @@
                 ₹ {{ slotProps.data.price }}
               </template>
             </Column>
+            <Column
+              field="price"
+              header="Active Users"
+              headerStyle="width:auto; min-width:10rem;"
+            >
+              <template #body="slotProps">
+                <span class="p-column-title">Active users</span>
+                 {{ slotProps.data.active_users }}
+              </template>
+            </Column>
             <Column header="Action" headerStyle="min-width:10rem;">
               <template #body="slotProps">
                 <div class="flex items-center">

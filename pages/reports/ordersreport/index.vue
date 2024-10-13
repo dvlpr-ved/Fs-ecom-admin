@@ -1,4 +1,5 @@
 <script setup>
+import Dropdown from "primevue/dropdown";
 import { useToast } from "primevue/usetoast";
 const toast = useToast();
 const filters = ref(getFilter(["product", "user", "category"]));
@@ -60,7 +61,122 @@ const showDetails = async (order_id, details = 1) => {
     });
   }
 };
+const order_status = ref('');
+const order_status_id = ref('');
+const orderStatusShown = ref(false);
+const order_traking_status = ref('');
+const order_status_options = ref([
+  {
+    label : "Ordered",
+    value : 1,
+  },
+  {
+    label : "Ready to dispatch",
+    value : 2,
+  },
+  {
+    label : "Shipped",
+    value : 3,    
+  },
+  {
+    label : "Complete",
+    value : 4,    
+  },
+  {
+    label : "Return/Exchnage",
+    value : 5,    
+  }     
+]);
+const openOrderStatus = (data) => {
+  order_status_id.value = data.id;
+  order_status.value = data.order_status;
+  order_traking_status.value = data.tracking_status;
+  orderStatusShown.value = true;
+}
+const openStatusChnageModal = () => {
 
+}
+const updateOrderStatus =async (id) => {
+  const response = await makeCustomRequest({
+    url : 'api/changeOrderStatus',
+    method : 'POST',
+    body : {
+      order_id : order_status_id.value,
+      status : order_status.value,
+      tracking_status : order_traking_status.value
+    }
+  });
+  if(response.success){
+  orderStatusShown.value = false;  
+  getTableData();  
+    toast.add({ severity: "success", summary: "Updated successfully", life: 3000 });
+  }
+  else{
+  orderStatusShown.value = false;
+  getTableData();    
+    toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
+  }
+}
+const printChallan = async (prod) => {
+  const response = await makeCustomRequest({
+    url : ``,
+    method : 'POST',
+    body : {
+      order : prod.id
+    }
+  })
+}
+const editOrderModal = ref(false);
+const fetchingEditOrderData = ref(false);
+const editOrder = ref();
+const editOrderDetails = ref();
+const editData = reactive({
+  name : '',
+  phone : '',
+  email : '',
+  pincode	: '',
+  locality	 : '',
+  address	 : '',
+  city	 : '',
+  state	 : '',
+  landmark	 : '',
+  tracking_status : ''
+});
+const editInvoice = async (prod) => {
+  fetchingEditOrderData.value = true;
+  const response = await makeCustomRequest({
+    url : `api/getEditOrderData`,
+    method : 'POST',
+    body : {
+      order_id : prod.id
+    }
+  });
+  if(response.success){
+    fetchingEditOrderData.value = false;
+    editOrderModal.value = true;
+    editOrder.value  = response.data;
+    editOrderDetails.value = response.details;
+    editData.name  = response.data.name;
+    editData.phone  = response.data.phone;
+    editData.email  = response.data.email;
+    editData.pincode  = response.data.pincode;
+    editData.locality  = response.data.locality;
+    editData.address  = response.data.address;
+    editData.city  = response.data.city;
+    editData.state  = response.data.state;
+    editData.landmark  = response.data.landmark;
+    editData.tracking_status  = response.data.tracking_status;
+    console.log(response.data);
+  }
+  else{
+    fetchingEditOrderData.value = false;
+    toast.add({
+      severity: "error",
+      summary: "Some Error occured",
+      life: 3000,
+    });
+  }
+}
 watch((page) => {
   getTableData();
 });
@@ -210,13 +326,36 @@ onMounted(() => {
         {{ slotProps.data.is_cod == 1 ? "Yes" : "No" }}
       </template>
     </Column>
-    <Column field="title" header="View detail" headerStyle="width:auto; min-width:10rem;">
+    <Column field="title" header="View detail" headerStyle="width:auto; min-width:15rem;">
       <template #body="slotProps">
         <span class="p-column-title">View detail</span>
         <Button
           @click="showDetails(slotProps.data.id)"
           icon="pi pi-eye"
           rounded
+          class="px-1"
+          severity=""
+        ></Button>
+        <Button
+          @click="openOrderStatus(slotProps.data)"
+          icon="pi pi-refresh"
+          rounded
+          class="px-1"
+          severity=""
+        ></Button>
+        <Button
+          @click="printChallan(slotProps.data)"
+          icon="pi pi-print"
+          rounded
+          class="px-1"
+          severity=""
+        ></Button>
+        <Button
+          @click="editInvoice(slotProps.data)"
+          icon="pi pi-pencil"
+          rounded
+          :loading="fetchingEditOrderData"
+          class="px-1"
           severity=""
         ></Button>
       </template>
@@ -308,4 +447,136 @@ onMounted(() => {
       </Column>
     </DataTable>
   </Dialog>
+  <Dialog v-model:visible="orderStatusShown"
+          :style="{ width: '450px' }"
+          header="Update Order Status"
+          :modal="true"
+          class="p-fulid"
+        >
+        <div class="feild grid gap-1 mt-2">
+          <div class="col-12 feild">
+            <Dropdown
+                v-model="order_status"
+                :options="order_status_options"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select"
+                class="w-full"
+              />            
+          </div>
+          <div v-if="order_status == 2" class="col-12">
+            <textarea v-model="order_traking_status" rows="5" class="w-full"></textarea>
+          </div>
+        </div>
+          <template #footer>
+            <Button label="Cancel" icon="pi pi-times" class="mr-2" severity="danger" @click="orderStatusShown = false"/>
+            <Button label="Save" icon="pi pi-check" class="mr-2"severity="success"
+              @click="updateOrderStatus"
+            />
+          </template>          
+        </Dialog>
+    
+        <Dialog
+      v-model:visible="editOrderModal"
+      position="top"
+      :style="{ width: '90%' }"
+      header="Edit order"
+      :modal="true"
+      class="p-fluid"
+    >
+    <div class="feild grid gap-1 mt-2">
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever name <span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editData.name"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever phone <span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editData.phone"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever email <span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editOrder.email"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever pincode<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editOrder.pincode"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever locality<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editOrder.locality"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever address<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editOrder.address"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever city<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editOrder.city"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever state<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editOrder.state"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Reciever landmark<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editOrder.landmark"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Tracking status<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editOrder.tracking_status"
+            required="true"
+            autofocus
+          />
+        </div>        
+        
+    </div>    
+  </Dialog>          
+        
 </template>
