@@ -2,7 +2,6 @@ export default (args = []) => {
     const now = new Date();
     const first_date = new Date(now.getFullYear(), now.getMonth(), 1); 
     
-    // Format dates as YYYY-MM-DD
     const from_date = `${first_date.getFullYear()}-${(first_date.getMonth() + 1).toString().padStart(2, '0')}-${first_date.getDate().toString().padStart(2, '0')}`;
     const to_date = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
     

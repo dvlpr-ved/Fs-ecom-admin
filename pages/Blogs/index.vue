@@ -37,10 +37,10 @@
             <Column header="Image" headerStyle="width:auto; min-width:15rem;">
               <template #body="slotProps">
                 <img
-                  :src="JSON.parse(slotProps.data.image)[0]?.source"
+                  :src="slotProps.data.image[0]?.source"
                   :alt="
-                    JSON.parse(slotProps.data.image)[0]?.source
-                      ? JSON.parse(slotProps.data.image)[0]?.name
+                    slotProps.data.image[0]?.source
+                      ? slotProps.data.image[0]?.source
                       : 'No Image'
                   "
                   width="40px"
@@ -318,7 +318,8 @@ const openEditDialog = (blog) => {
   makeEntry.content = blog.content;
   makeEntry.images = blog.image;
   editDialogVisible.value = true;
-
+  BlogEntry.id = blog.id;
+  BlogEntry.titlev=blog.title;
   if (!editor) {
     editor = useEditor({
       content: makeEntry.content,
@@ -344,7 +345,7 @@ const submitBlogPost = async () => {
     const response = await makeCustomRequest({
       url: `api/Blogs/${BlogEntry.id}`,
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body: {...payload},
     });
 
     if (!response) {
