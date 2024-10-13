@@ -1,5 +1,6 @@
 <template>
   <div>
+    <Toast />
     <div v-if="editor" class="flex gap-2 flex-wrap">
       <Button
         @click="editor.chain().focus().toggleBold().run()"
@@ -135,6 +136,8 @@
 </template>
 
 <script setup>
+import { useToast } from "primevue/usetoast";
+const toast = useToast();
 const editor = useEditor({
   content: "<p>Blog Content Here...</p>",
   extensions: [TiptapStarterKit],
@@ -164,13 +167,11 @@ const submitBlogPost = async () => {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
+    if (!response) {
       throw new Error("Network response was not ok: " + response);
     } else {
-      const result = await response.json();
-      console.log("Success:", result);
       toast.add({ severity: "info", summary: `Blog Added `, life: 3000 });
-      navigateTo("/");
+      navigateTo("/blogs");
     }
   } catch (error) {
     console.error("Error:", error);
