@@ -1,4 +1,6 @@
 <script setup>
+const authstore = useAuthStore();
+
 const orders = ref([]);
 const loading = ref(false);
 const fromDate = ref(null);
@@ -22,8 +24,6 @@ const getSevenDaysBeforeDate = () => {
   return date;
 };
 const calculateTotals = (data) => {
-  console.log("here all data", data);
-
   totalNewCustomers.value = data.new_customers ? data.new_customers.length : 0;
   totalRecentOrders.value = data.recent_orders ? data.recent_orders.length : 0;
   totalRecentSellers.value = data.recent_sellers ? data.recent_sellers.length : 0;
@@ -84,11 +84,11 @@ onMounted(() => {
         <!-- <span class="text-500">since last visit</span> -->
       </div>
     </div>
-    <div class="col-12 lg:col-6 xl:col-3">
+    <div class="col-12 lg:col-6 xl:col-3" v-if="authstore.userData.name === 'Admin'">
       <div class="card mb-0">
         <div class="flex justify-content-between mb-3">
           <div>
-            <span class="block text-500 font-medium mb-3">Subscriptions Recent</span>
+            <span class="block text-500 font-medium mb-3">Subscriptions</span>
             <div class="text-900 font-medium text-xl">{{ totalRecentSubscriptions }}</div>
           </div>
           <div
@@ -102,7 +102,7 @@ onMounted(() => {
         <!-- <span class="text-500">since last week</span> -->
       </div>
     </div>
-    <div class="col-12 lg:col-6 xl:col-3">
+    <div class="col-12 lg:col-6 xl:col-3" v-if="authstore.userData.name === 'Admin'">
       <div class="card mb-0">
         <div class="flex justify-content-between mb-3">
           <div>
@@ -217,12 +217,6 @@ onMounted(() => {
             </template>
           </Column> -->
 
-          <Column field="subtotal" header="Subtotal">
-            <template #body="slotProps">
-              {{ slotProps.data.subtotal }}
-            </template>
-          </Column>
-
           <Column field="city" header="City">
             <template #body="slotProps">
               {{ slotProps.data.city }}
@@ -245,9 +239,15 @@ onMounted(() => {
             </template>
           </Column>
 
-          <Column header="Invoice">
+          <!-- <Column header="Invoice">
             <template #body="slotProps">
               <a :href="slotProps.data.pdf" target="_blank">Download</a>
+            </template>
+          </Column> -->
+
+          <Column field="subtotal" header="Subtotal">
+            <template #body="slotProps">
+              {{ slotProps.data.subtotal }}
             </template>
           </Column>
         </DataTable>
