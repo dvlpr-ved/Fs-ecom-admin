@@ -243,6 +243,27 @@
             v-model="makeEntryBanner.image"
             @close="imageUploaderBanner = false"
           ></ImageUploader>
+          <div class="field col">
+            <label for="name">Mobile Banner</label>
+            <Button
+              icon="pi pi-upload"
+              class="ml-2"
+              rounded
+              severity="success"
+              @click="imageUploaderBannerMboile = true"
+            />
+            <span class="text-primary"></span>
+            {{
+              makeEntryBanner.mobile_image.length
+                ? makeEntryBanner.mobile_image.length + " Selected"
+                : ""
+            }}
+          </div>
+          <ImageUploader
+            :visible="imageUploaderBannerMboile"
+            v-model="makeEntryBanner.mobile_image"
+            @close="imageUploaderBannerMboile = false"
+          ></ImageUploader>          
           <template #footer>
             <Button
               label="Cancel"
@@ -302,6 +323,27 @@
             v-model="editEntryBanner.image"
             @close="imageUploaderBannerEdit = false"
           ></ImageUploader>
+          <div class="field col">
+            <label for="name">Mobile Banner</label>
+            <Button
+              icon="pi pi-upload"
+              class="ml-2"
+              rounded
+              severity="success"
+              @click="imageUploaderBannerMboileEdit = true"
+            />
+            <span class="text-primary"></span>
+            {{
+              editEntryBanner.mobile_image.length
+                ? editEntryBanner.mobile_image.length + " Selected"
+                : ""
+            }}
+          </div>
+          <ImageUploader
+            :visible="imageUploaderBannerMboileEdit"
+            v-model="editEntryBanner.mobile_image"
+            @close="imageUploaderBannerMboileEdit = false"
+          ></ImageUploader>          
           <template #footer>
             <Button
               label="Cancel"
@@ -527,10 +569,13 @@ const imageUploaderBanner = ref(false);
 const submittededitBanner = ref(false);
 const editDialogBanner = ref(false);
 const imageUploaderBannerEdit = ref(false);
+const imageUploaderBannerMboile = ref(false);
+const imageUploaderBannerMboileEdit = ref(false);
 
 const makeEntryBanner = reactive({
   name: "",
   image: [],
+  mobile_image : [],
   is_banner: 1,
 });
 const openNewBanner = () => {
@@ -552,6 +597,7 @@ const saveEntryBanner = async () => {
         name: makeEntryBanner.name,
         is_banner: makeEntryBanner.is_banner,
         images: makeEntryBanner.image,
+        mobile_image : makeEntryBanner.mobile_image
       },
     });
     if (res.success) {
@@ -572,6 +618,7 @@ const saveEntryBanner = async () => {
 const editEntryBanner = reactive({
   name: "",
   image: [],
+  mobile_image : [],
   is_banner: 1,
   id: "",
 });
@@ -581,6 +628,7 @@ const editEntryOpenBanner = (en) => {
   editEntryBanner.id = en.id;
   editEntryBanner.is_banner = 1;
   editEntryBanner.image = en.images;
+  editEntryBanner.mobile_image = en.mobile_images;
   editDialogBanner.value = true;
 };
 const updateEntryBannerEdit = async () => {
@@ -594,6 +642,7 @@ const updateEntryBannerEdit = async () => {
         name: editEntryBanner.name,
         is_banner: editEntryBanner.is_banner,
         images: editEntryBanner.image,
+        mobile_image : editEntryBanner.mobile_image
       },
     });
     if (res.success) {
