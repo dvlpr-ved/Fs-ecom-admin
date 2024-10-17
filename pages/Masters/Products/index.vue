@@ -37,7 +37,7 @@
                 label="Repost Random 50 products"
                 icon="pi pi-cog"
                 class="mr-2"
-                :loading = "reposting"
+                :loading="reposting"
                 severity="success"
                 @click="repostRandom"
               />
@@ -45,25 +45,28 @@
                 label="Schedule Repost"
                 icon="pi pi-cog"
                 class="mr-2"
-                :loading = "scheduling"
+                :loading="scheduling"
                 severity="success"
                 @click="scheduleRepost"
               />
             </div>
           </template>
         </Toolbar>
+        <div class="col-12">
+          <reportFielder :filters="filters" @filter="getTableData" />
+        </div>
         <DataTable
           v-if="data"
           :loading="loading"
           ref="table"
           :value="data.data.data"
           dataKey="id"
-          :paginator="true"
+        >
+          <!-- :paginator="true"
           :rows="10"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
           :rowsPerPageOptions="[5, 10, 25]"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} roles"
-        >
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} roles" -->
           <template #header>
             <div
               class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
@@ -138,7 +141,7 @@
                 severity="success"
                 rounded
                 @click="repostRandom(slotProps.data)"
-              />              
+              />
               <Button
                 icon="pi pi-trash"
                 class="mt-2"
@@ -148,6 +151,9 @@
               />
             </template>
           </Column>
+          <template #footer>
+            <TableFooter :totalPages="totalPages" v-model="page"></TableFooter>
+          </template>
         </DataTable>
         <div
           v-else
@@ -597,6 +603,11 @@ const HighlightValues = ref([
   { name: "Yes", value: 1 },
   { name: "No", value: 0 },
 ]);
+
+const totalPages = ref(0);
+const page = ref(1);
+const filters = ref(getFilter(["user", "category"]));
+
 const homeListingShow = ref([]);
 const homeListingShowEdit = ref([]);
 const imageUploaderProduct = ref(false);
@@ -648,22 +659,73 @@ const getPlucks = async () => {
   tagData.value = data_tags;
   vendorData.value = data_vendor;
 };
-const pagination = computed(() => {
-  if (data.value) {
-    const last_page = toFixed(data.value.total / 10);
-    return { current: data.value.current_page, total: data.total, last: last_page };
-  }
-});
+
 const loading = ref(true);
 const getTableData = async () => {
-  data.value = await makeCustomRequest({
-    url: "api/Masters/Products",
+  if (filters.value.from_date instanceof Date) {
+    filters.value.from_date = `${filters.value.from_date.getFullYear()}-${(
+      filters.value.from_date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${filters.value.from_date
+      .getDate()
+      .toString()
+      .padStart(2, "0")}`;
+  }
+  if (filters.value.to_date instanceof Date) {
+    filters.value.to_date = `${filters.value.to_date.getFullYear()}-${(
+      filters.value.to_date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${filters.value.to_date.getDate().toString().padStart(2, "0")}`;
+  }
+  const res = await makeCustomRequest({
+    url: `api/Masters/Products?page=${page.value}`,
     method: "GET",
+    query: {
+      from_date: filters.value.from_date,
+      to_date: filters.value.to_date,
+      category: filters.value.category_id,
+      seller: filters.value.user_id,
+      // ...filters.value,
+    },
+
+    // https://fashtsaly.com/API/public/api/Masters/Products?page=1&from_date=2024-10-01&to_date=2024-10-18&user_id&category_id=13
   });
+  if (res) {
+    const total_records = res.data.total;
+    const per_page = res.data.per_page;
+    totalPages.value = Math.ceil(total_records / per_page);
+    data.value = res;
+    console.log("data here", data);
+  }
   loading.value = false;
   getCatgMast();
 };
-// Get entries ends
+
+const pagination = computed(() => {
+  if (data.value) {
+    const last_page = toFixed(data.value.total / 5);
+    return { current: data.value.current_page, total: data.total, last: last_page };
+  }
+});
+
+const showDetails = async (order_id, details = 1) => {
+  const response = await makeCustomRequest({
+    url: `api/salesOrderReport?details=1&order_id=${order_id}`,
+    method: "GET",
+  });
+  if (response) {
+    userData.value = response;
+    detailDialog.value = true;
+  } else {
+    toast.add({
+      severity: "error",
+      summary: "error in getting seles data",
+      life: 3000,
+    });
+  }
+};
 
 // create entry
 const openNew = () => {
@@ -1009,6 +1071,9 @@ const importFile = async (option) => {
   getTableData();
   // console.log(response);
 };
+watch((page, filters) => {
+  getTableData();
+});
 const filtered = ref("");
 const filterInput = (e) => {
   filtered.value = e.value ? e.value : "";
@@ -1048,49 +1113,50 @@ function generateRandomString(length) {
 
   return result;
 }
-const rePostProduct =async (product) => {
+const rePostProduct = async (product) => {
   const response = await makeCustomRequest({
-    url : 'api/repostSingleProduct',
-    method : 'POST',
-    body : {
-      product_id : product.id
-    }
-  }) 
-  if(response.success){
+    url: "api/repostSingleProduct",
+    method: "POST",
+    body: {
+      product_id: product.id,
+    },
+  });
+  if (response.success) {
     toast.add({ severity: "success", summary: "Reposted successfully", life: 3000 });
-  }
-  else{
+  } else {
     toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
   }
-}
-const reposting =  ref(false);
+};
+const reposting = ref(false);
 const repostRandom = async () => {
   reposting.value - true;
-  const response =  await makeCustomRequest({
-    url : 'api/repostRandomManual',
-    method : 'POST',
+  const response = await makeCustomRequest({
+    url: "api/repostRandomManual",
+    method: "POST",
   });
-  if(response.success){
+  if (response.success) {
     toast.add({ severity: "success", summary: "Reposted successfully", life: 3000 });
-  }
-  else{
+  } else {
     toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
   }
   reposting.value = false;
-}
-const scheduling =  ref(false);
-const scheduleRepost  =async () => {
+};
+const scheduling = ref(false);
+const scheduleRepost = async () => {
   scheduling.value - true;
-  const response =  await makeCustomRequest({
-    url : 'api/scheduleRepost',
-    method : 'POST',
+  const response = await makeCustomRequest({
+    url: "api/scheduleRepost",
+    method: "POST",
   });
-  if(response.success){
+  if (response.success) {
     toast.add({ severity: "success", summary: "Scheduled successfully", life: 3000 });
-  }
-  else{
-    toast.add({ severity: "error", summary:response.msg ? response.msg : "Something went wrong", life: 3000 });
+  } else {
+    toast.add({
+      severity: "error",
+      summary: response.msg ? response.msg : "Something went wrong",
+      life: 3000,
+    });
   }
   scheduling.value = false;
-}
+};
 </script>

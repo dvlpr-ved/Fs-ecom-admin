@@ -1,15 +1,15 @@
 export default (args = []) => {
     const now = new Date();
-    const first_date = new Date(now.getFullYear(), now.getMonth(), 1); 
-    
+    const first_date = new Date(now.getFullYear(), now.getMonth(), 1);
+
     const from_date = `${first_date.getFullYear()}-${(first_date.getMonth() + 1).toString().padStart(2, '0')}-${first_date.getDate().toString().padStart(2, '0')}`;
     const to_date = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
-    
-    let filters =  {
+
+    let filters = {
         from_date: from_date,
-        to_date: to_date, 
+        to_date: to_date,
     };
-    
+
     if (args.indexOf('product') > -1) {
         filters = { ...filters, product_id: '' };
     }
