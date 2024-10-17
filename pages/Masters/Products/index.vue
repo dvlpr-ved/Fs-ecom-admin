@@ -72,10 +72,11 @@
               class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
             >
               <h5 class="m-0">Manage products</h5>
-              <IconField iconPosition="left" class="block mt-2 md:mt-0">
-                <InputIcon class="pi pi-search" />
-                <InputText class="w-full sm:w-auto" placeholder="Search..." />
-              </IconField>
+              <filterBySearch
+                :initialSearch="searchQuery"
+                :debounceTime="300"
+                :onSearch="updateSearch"
+              />
             </div>
           </template>
           <Column field="ID" header="ID" headerStyle="width:auto; min-width:10rem;">
@@ -606,6 +607,7 @@ const HighlightValues = ref([
 
 const totalPages = ref(0);
 const page = ref(1);
+const searchQuery = ref("");
 const filters = ref(getFilter(["user", "category"]));
 
 const homeListingShow = ref([]);
@@ -660,6 +662,10 @@ const getPlucks = async () => {
   vendorData.value = data_vendor;
 };
 
+const updateSearch = (newSearchQuery) => {
+  searchQuery.value = newSearchQuery;
+};
+
 const loading = ref(true);
 const getTableData = async () => {
   if (filters.value.from_date instanceof Date) {
@@ -687,17 +693,15 @@ const getTableData = async () => {
       to_date: filters.value.to_date,
       category: filters.value.category_id,
       seller: filters.value.user_id,
+      search: searchQuery.value,
       // ...filters.value,
     },
-
-    // https://fashtsaly.com/API/public/api/Masters/Products?page=1&from_date=2024-10-01&to_date=2024-10-18&user_id&category_id=13
   });
   if (res) {
     const total_records = res.data.total;
     const per_page = res.data.per_page;
     totalPages.value = Math.ceil(total_records / per_page);
     data.value = res;
-    console.log("data here", data);
   }
   loading.value = false;
   getCatgMast();
@@ -1071,9 +1075,10 @@ const importFile = async (option) => {
   getTableData();
   // console.log(response);
 };
-watch((page, filters) => {
+watch((page, searchQuery, filters) => {
   getTableData();
 });
+
 const filtered = ref("");
 const filterInput = (e) => {
   filtered.value = e.value ? e.value : "";
