@@ -45,10 +45,11 @@
               class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
             >
               <h5 class="m-0">Manage Home Listings and Banners</h5>
-              <IconField iconPosition="left" class="block mt-2 md:mt-0">
-                <InputIcon class="pi pi-search" />
-                <InputText class="w-full sm:w-auto" placeholder="Search..." />
-              </IconField>
+              <filterBySearch
+                :initialSearch="searchQuery"
+                :debounceTime="300"
+                :onSearch="updateSearch"
+              />
             </div>
           </template>
           <Column field="ID" header="ID" headerStyle="width:auto; min-width:10rem;">
@@ -263,7 +264,7 @@
             :visible="imageUploaderBannerMboile"
             v-model="makeEntryBanner.mobile_image"
             @close="imageUploaderBannerMboile = false"
-          ></ImageUploader>          
+          ></ImageUploader>
           <template #footer>
             <Button
               label="Cancel"
@@ -343,7 +344,7 @@
             :visible="imageUploaderBannerMboileEdit"
             v-model="editEntryBanner.mobile_image"
             @close="imageUploaderBannerMboileEdit = false"
-          ></ImageUploader>          
+          ></ImageUploader>
           <template #footer>
             <Button
               label="Cancel"
@@ -423,6 +424,8 @@ const catgMast = ref(null);
 const catgMastIndexedArr = ref(null);
 const createImageUploader = ref(false);
 const editImageUploader = ref(false);
+
+const searchQuery = ref("");
 // Get entries
 onMounted(() => {
   getTableData();
@@ -438,11 +441,18 @@ const pagination = computed(() => {
 });
 const getTableData = async () => {
   data.value = await makeCustomRequest({
-    url: "api/Masters/HomeListing",
+    url: "api/Masters/HomeListing?page=1",
     method: "GET",
+    query: {
+      search: searchQuery.value,
+    },
   });
 };
 // Get entries ends
+
+const updateSearch = (newSearchQuery) => {
+  searchQuery.value = newSearchQuery;
+};
 
 // create entry
 const openNew = () => {
@@ -575,7 +585,7 @@ const imageUploaderBannerMboileEdit = ref(false);
 const makeEntryBanner = reactive({
   name: "",
   image: [],
-  mobile_image : [],
+  mobile_image: [],
   is_banner: 1,
 });
 const openNewBanner = () => {
@@ -597,7 +607,7 @@ const saveEntryBanner = async () => {
         name: makeEntryBanner.name,
         is_banner: makeEntryBanner.is_banner,
         images: makeEntryBanner.image,
-        mobile_image : makeEntryBanner.mobile_image
+        mobile_image: makeEntryBanner.mobile_image,
       },
     });
     if (res.success) {
@@ -618,7 +628,7 @@ const saveEntryBanner = async () => {
 const editEntryBanner = reactive({
   name: "",
   image: [],
-  mobile_image : [],
+  mobile_image: [],
   is_banner: 1,
   id: "",
 });
@@ -642,7 +652,7 @@ const updateEntryBannerEdit = async () => {
         name: editEntryBanner.name,
         is_banner: editEntryBanner.is_banner,
         images: editEntryBanner.image,
-        mobile_image : editEntryBanner.mobile_image
+        mobile_image: editEntryBanner.mobile_image,
       },
     });
     if (res.success) {
@@ -690,6 +700,9 @@ const saveEntrySequence = async () => {
   }
 };
 
+watch((searchQuery) => {
+  getTableData();
+});
 // sequence
 const showSequence = ref(false);
 </script>
