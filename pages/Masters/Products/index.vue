@@ -714,23 +714,6 @@ const pagination = computed(() => {
   }
 });
 
-const showDetails = async (order_id, details = 1) => {
-  const response = await makeCustomRequest({
-    url: `api/salesOrderReport?details=1&order_id=${order_id}`,
-    method: "GET",
-  });
-  if (response) {
-    userData.value = response;
-    detailDialog.value = true;
-  } else {
-    toast.add({
-      severity: "error",
-      summary: "error in getting seles data",
-      life: 3000,
-    });
-  }
-};
-
 // create entry
 const openNew = () => {
   submitted.value = false;
