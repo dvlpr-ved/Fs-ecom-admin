@@ -8,7 +8,7 @@
         </template>
         <div class="card">
             <Toast />
-            <FileUpload name="demo[]" url="/api/upload" customUpload @upload="onTemplatedUpload($event)" :multiple="true" accept="image/*" :maxFileSize="1000000" @select="onSelectedFiles" @uploader="customBase64Uploader">
+            <FileUpload name="demo[]" url="/api/upload" customUpload @upload="onTemplatedUpload($event)" :multiple="true" accept="image/*" :maxFileSize="100000000000" @select="onSelectedFiles" @uploader="customBase64Uploader">
                 <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
                     <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
                         <div class="flex gap-2">
@@ -22,6 +22,10 @@
                     </div>
                 </template>
                 <template #content="{ files, uploadedFiles, removeUploadedFileCallback, removeFileCallback }">
+                    <div v-if="isFileUploading" class="w-100" style="display: flex;align-items: center; justify-content: center;">
+                        <ProgressBar :value="uploadProgress" style="height: 20px;"></ProgressBar>
+                        <p class="mt-3">{{ uploadedItemsQueue }} of {{ totalToBeUploaded }} files uploaded</p>
+                    </div>
                     <div class="flex flex-wrap gap-2 pt-4">
                         <div v-if="files.length > 0">
                             <h5>Pending</h5>
@@ -78,6 +82,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { usePrimeVue } from 'primevue/config';
 import { useToast } from "primevue/usetoast";
+import pLimit from 'p-limit';
 
 const props = defineProps({
     visible: {
@@ -215,34 +220,80 @@ const formatSize = (bytes) => {
     return `${formattedSize} ${sizes[i]}`;
 };
 
+const totalToBeUploaded = ref(0);
+const uploadedItemsQueue = ref(0);
+const uploadedItemsFailedQueue = ref(0);
+const isFileUploading = ref(0);
 const customBase64Uploader = async (event) => {
-    for (let index = 0; index < event.files.length; index++) {
-        const file = event.files[index];
-        const reader = new FileReader();
-        const blob = await fetch(file.objectURL).then(r => r.blob()); // blob:url
+    isFileUploading.value = true;
+    const limit = pLimit(1); // Limit the number of concurrent uploads to 3
+    totalToBeUploaded.value = event.files.length;
+    const filePromises = event.files.map((file) => 
+        limit(async () => {
+            const reader = new FileReader();
+            const blob = await fetch(file.objectURL).then((r) => r.blob());
 
-        reader.readAsDataURL(blob);
+            return new Promise((resolve, reject) => {
+                reader.onload = async () => {
+                    try {
+                        const base64data = reader.result;
 
-        reader.onloadend = async function () {
-            const base64data = reader.result;
-            const res = await makeCustomRequest({
-                url: 'api/Upload',
-                method: 'POST',
-                body: {
-                    image: base64data,
-                    name: file.name
-                }
+                        const response = await makeCustomRequest({
+                            url: 'api/Upload',
+                            method: 'POST',
+                            body: {
+                                image: base64data,
+                                name: file.name
+                            }
+                        });
+
+                        if (response.success) {
+                            uploadedItemsQueue.value = uploadedItemsQueue.value+1;
+                            preUploads.value.unshift({
+                                source: response.data.source,
+                                name: response.data.name,
+                                code: response.data.code
+                            });
+                        }
+                        else{
+                            uploadedItemsFailedQueue.value = uploadedItemsFailedQueue.value+1; 
+                        }
+                        resolve(response);
+                    } catch (err) {
+                        uploadedItemsFailedQueue.value = uploadedItemsFailedQueue.value+1; 
+                        reject(err);
+                    }
+                };
+
+                reader.onerror = (error) => {
+                    uploadedItemsFailedQueue.value = uploadedItemsFailedQueue.value+1; 
+                    reject(error);
+                };
+
+                reader.readAsDataURL(blob);
             });
-            if (res.success) {
-                preUploads.value.unshift({ 
-                    'source': res.data.source, 
-                    'name': res.data.name,
-                    'code': res.data.code
-                });
-            }
-        };
+        })
+    );
+    try {
+        const fileInfos = await Promise.all(filePromises);
+        isFileUploading.value = false;
+        loadImages();
+        console.log('All files uploaded:', fileInfos);
+    } catch (error) {
+        isFileUploading.value = false;
+        console.error('Error uploading files:', error);
     }
 };
+const uploadProgress = computed(() => {
+  if (totalToBeUploaded.value === 0) return 0;
+  return Math.round((uploadedItemsQueue.value / totalToBeUploaded.value) * 100);
+});
+
+
+
+
+
+
 const deleteFileSource =async (id , image) => {
     if(id){
         const response =await makeCustomRequest({

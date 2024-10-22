@@ -117,20 +117,43 @@ const updateOrderStatus =async (id) => {
     toast.add({ severity: "error", summary: "Something went wrong", life: 3000 });
   }
 }
+const printingChallan = ref(false);
 const printChallan = async (prod) => {
-  const response = await makeCustomRequest({
-    url : ``,
-    method : 'POST',
-    body : {
-      order : prod.id
+    const ids = order_printed.value.map(item => item.id); 
+    printingChallan.value  = true;
+    try {
+        const response = await fetch('https://fashtsaly.com/API/public/api/printChallan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orders: ids }) 
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'printChallan.pdf';
+            document.body.appendChild(link); 
+            link.click();
+            document.body.removeChild(link); 
+        } else {
+            console.error('Error downloading PDF:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error:', error);
     }
-  })
-}
+    printingChallan.value = false;
+};
+
 const editOrderModal = ref(false);
 const fetchingEditOrderData = ref(false);
 const editOrder = ref();
 const editOrderDetails = ref();
 const editData = reactive({
+  id : '',
   name : '',
   phone : '',
   email : '',
@@ -140,8 +163,39 @@ const editData = reactive({
   city	 : '',
   state	 : '',
   landmark	 : '',
-  tracking_status : ''
+  tracking_status : '',
+  order_status : '',
+  courier : '',
+  tracking_no : '',
+  godown_line_1 : '',
+  godown_line_2 : '',
+  godown_line_3 : '',
+  godown_phone : ''
 });
+const updateOrder =async () => {
+  const response = await makeCustomRequest({
+    url : `api/saveEditOrderData`,
+    method : 'POST',
+    body : {
+      ...editData
+    }
+  });
+  if(response.success){
+    toast.add({
+      severity: "success",
+      summary: "Updated successFully",
+      life: 3000,
+    });
+  }
+  else{
+    toast.add({
+      severity: "error",
+      summary: "Some Error occured",
+      life: 3000,
+    });    
+  }
+  editOrderModal.value =  false;
+}
 const editInvoice = async (prod) => {
   fetchingEditOrderData.value = true;
   const response = await makeCustomRequest({
@@ -156,6 +210,7 @@ const editInvoice = async (prod) => {
     editOrderModal.value = true;
     editOrder.value  = response.data;
     editOrderDetails.value = response.details;
+    editData.id = prod.id;
     editData.name  = response.data.name;
     editData.phone  = response.data.phone;
     editData.email  = response.data.email;
@@ -166,7 +221,6 @@ const editInvoice = async (prod) => {
     editData.state  = response.data.state;
     editData.landmark  = response.data.landmark;
     editData.tracking_status  = response.data.tracking_status;
-    console.log(response.data);
   }
   else{
     fetchingEditOrderData.value = false;
@@ -183,21 +237,23 @@ watch((page) => {
 onMounted(() => {
   getTableData();
 });
+const order_printed = ref([]);
 </script>
 <template>
   <reportFielder :filters="filters" @filter="getTableData" />
-  <DataTable v-if="data" class="mt-3" ref="table" :value="data" dataKey="id" :rows="10">
+  <DataTable v-model:selection="order_printed"  v-if="data" class="mt-3" ref="table" :value="data" dataKey="id" :rows="10">
     <template #header>
       <div
         class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
       >
-        <h5 class="m-0">Sales order report</h5>
+        <h5 class="m-0">Sales order report<Button class="mx-3" icon="pi pi-print" :disabled="printingChallan" :loading="printingChallan" @click="printChallan"></Button></h5>
         <IconField iconPosition="left" class="block mt-2 md:mt-0">
           <InputIcon class="pi pi-search" />
           <InputText class="w-full sm:w-auto" placeholder="Search..." />
         </IconField>
       </div>
     </template>
+    <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
     <Column field="ID" header="ID" headerStyle="width:auto; min-width:10rem;">
       <template #body="slotProps">
         <span class="p-column-title">ID</span>
@@ -336,20 +392,13 @@ onMounted(() => {
           class="px-1"
           severity=""
         ></Button>
-        <Button
+        <!-- <Button
           @click="openOrderStatus(slotProps.data)"
           icon="pi pi-refresh"
           rounded
           class="px-1"
           severity=""
-        ></Button>
-        <Button
-          @click="printChallan(slotProps.data)"
-          icon="pi pi-print"
-          rounded
-          class="px-1"
-          severity=""
-        ></Button>
+        ></Button> -->
         <Button
           @click="editInvoice(slotProps.data)"
           icon="pi pi-pencil"
@@ -507,7 +556,7 @@ onMounted(() => {
           <label for="name">Reciever email <span class="text-red-400">*</span></label>
           <InputText
             id="name"
-            v-model.trim="editOrder.email"
+            v-model.trim="editData.email"
             required="true"
             autofocus
           />
@@ -516,7 +565,7 @@ onMounted(() => {
           <label for="name">Reciever pincode<span class="text-red-400">*</span></label>
           <InputText
             id="name"
-            v-model.trim="editOrder.pincode"
+            v-model.trim="editData.pincode"
             required="true"
             autofocus
           />
@@ -525,7 +574,7 @@ onMounted(() => {
           <label for="name">Reciever locality<span class="text-red-400">*</span></label>
           <InputText
             id="name"
-            v-model.trim="editOrder.locality"
+            v-model.trim="editData.locality"
             required="true"
             autofocus
           />
@@ -534,7 +583,7 @@ onMounted(() => {
           <label for="name">Reciever address<span class="text-red-400">*</span></label>
           <InputText
             id="name"
-            v-model.trim="editOrder.address"
+            v-model.trim="editData.address"
             required="true"
             autofocus
           />
@@ -543,7 +592,7 @@ onMounted(() => {
           <label for="name">Reciever city<span class="text-red-400">*</span></label>
           <InputText
             id="name"
-            v-model.trim="editOrder.city"
+            v-model.trim="editData.city"
             required="true"
             autofocus
           />
@@ -552,7 +601,7 @@ onMounted(() => {
           <label for="name">Reciever state<span class="text-red-400">*</span></label>
           <InputText
             id="name"
-            v-model.trim="editOrder.state"
+            v-model.trim="editData.state"
             required="true"
             autofocus
           />
@@ -561,22 +610,98 @@ onMounted(() => {
           <label for="name">Reciever landmark<span class="text-red-400">*</span></label>
           <InputText
             id="name"
-            v-model.trim="editOrder.landmark"
+            v-model.trim="editData.landmark"
             required="true"
             autofocus
           />
+        </div>        
+    </div> 
+    <div class="feild grid gap-1 mt-2">
+      <!-- <EditOrder v-model="editOrderDetails"></EditOrder> -->
+    </div>
+    <h5>Tracking Details</h5>
+      <div class="feild grid gap-1 mt-2">
+        <div class="field lg:col-2 col-12">
+          <label for="name">Order Status<span class="text-red-400">*</span></label>
+            <Dropdown
+                v-model="editData.order_status"
+                :options="order_status_options"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select"
+                class="w-full"
+              />            
         </div>
         <div class="field lg:col-2 col-12">
           <label for="name">Tracking status<span class="text-red-400">*</span></label>
           <InputText
             id="name"
-            v-model.trim="editOrder.tracking_status"
+            v-model.trim="editData.tracking_status"
             required="true"
             autofocus
           />
-        </div>        
-        
-    </div>    
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Courier partner<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editData.courier"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Tracking No<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editData.tracking_no"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Godown address Line 1<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editData.godown_line_1"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Godown address Line 2<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editData.godown_line_2"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Godown address Line 3<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editData.godown_line_3"
+            required="true"
+            autofocus
+          />
+        </div>
+        <div class="field lg:col-2 col-12">
+          <label for="name">Godown phone<span class="text-red-400">*</span></label>
+          <InputText
+            id="name"
+            v-model.trim="editData.godown_phone"
+            required="true"
+            autofocus
+          />
+        </div>
+      </div>
+      <template #footer>
+            <Button label="Cancel" icon="pi pi-times" class="mr-2" severity="danger" @click="editOrderModal = false"/>
+            <Button label="Save" icon="pi pi-check" class="mr-2"severity="success"
+              @click="updateOrder"
+            />
+        </template>
   </Dialog>          
         
 </template>
