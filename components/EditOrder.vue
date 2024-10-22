@@ -1,64 +1,36 @@
 <template>
-    <div class="feild grid gap-6 mt-2">
+    <!-- <div class="feild grid gap-6 mt-2">
       <div class="col-10 text-align-left">
-        <h5 class="p-dialog-title">Edit Skus</h5>
+        <h5 class="p-dialog-title">Edit order items</h5>
       </div>
-      <div class="col text-align-right">
-        <Button
-          label="Add New"
-          icon="pi pi-plus"
-          class="mr-2 w-full"
-          severity="success"
-          @click="addRow"
-        ></Button>
-      </div>
-    </div>
+    </div> -->
     <div v-for="row in rows" :key="row" class="feild grid mt-2">
-      <div class="field lg:col-2 col-12">
-        <label for="name">Product <span class="text-red-400">*</span></label>
-        <InputText v-model.trim="localData[row].product" required="true" autofocus />
+      <div class="field lg:col-3 col-12">
+        <label for="name">Product <span class="text-red-400">*</span></label><br>
+         {{ localData[row].product_name }}
       </div>
       <div class="field lg:col-4 col-12">
         <div class="feild grid">
           <div class="col-6">
-            <label for="color">Color <span class="text-red-400">*</span></label>
-            <InputText
-              v-model.trim="localData[row].color"
-              class="mt-2"
-              required="true"
-              autofocus
-            />
+            <label for="color">Color <span class="text-red-400">*</span></label><br>
+            <span class="mt-3">{{ localData[row].color }}</span>
           </div>
           <div class="col-6">
-            <label for="color">Size <span class="text-red-400">*</span></label>
-            <InputText
-              class="mt-2"
-              v-model.trim="localData[row].size"
-              required="true"
-              autofocus
-            />
+            <label for="color">Size <span class="text-red-400">*</span></label><br>
+            {{ localData[row].size }}
           </div>
         </div>
-      </div>
-      <div class="field lg:col-1 col-12">
-        <label for="color">Stock <span class="text-red-400">*</span></label>
-        <InputNumber v-model.trim="localData[row].stock" required="true" autofocus />
       </div>
       <div class="field lg:col-2 col-12">
+        <label for="color">Quantity <span class="text-red-400">*</span></label>
+        <InputNumber v-model.trim="localData[row].quantity" required="true" autofocus />
+      </div>
+      <div class="field lg:col-3 col-12">
         <div class="feild grid">
           <div class="col-6">
-            <label for="color">Price <span class="text-red-400">*</span></label>
+            <label for="color">Price/pcs <span class="text-red-400">*</span></label>
             <InputNumber
-              v-model.trim="localData[row].price"
-              class="mt-2"
-              required="true"
-              autofocus
-            />
-          </div>
-          <div class="col-6">
-            <label for="color">Special Price <span class="text-red-400">*</span></label>
-            <InputNumber
-              v-model.trim="localData[row].price_subscribed"
+              v-model.trim="localData[row].price_per_pc"
               class="mt-2"
               required="true"
               autofocus
@@ -66,43 +38,6 @@
           </div>
         </div>
       </div>
-      <div class="field col">
-        <label for="color">Images <span class="text-red-400">*</span></label>
-        <Button
-          label="Upload"
-          icon="pi pi-upload"
-          severity="success"
-          @click="UploaderVisible[row] = true"
-        />
-        {{
-          props.modelValue[row].images
-            ? props.modelValue[row].images.length + " Uploaded"
-            : ""
-        }}
-      </div>
-      <div class="field col">
-        <Button
-          label="Copy"
-          icon="pi pi-copy"
-          class="mt-4"
-          severity="success"
-          @click="copyProduct(localData[row])"
-        />
-      </div>
-      <div class="field col">
-        <Button
-          icon="pi pi-minus"
-          class="mr-2 mt-4 w-9"
-          severity="danger"
-          @click="removeRow(row)"
-        ></Button>
-      </div>
-      <ImageUploader
-        @close="UploaderVisible[row] = false"
-        v-model="props.modelValue[row].images"
-        @hideDialog="HandlecloseProductUploader()"
-        :visible="UploaderVisible[row]"
-      ></ImageUploader>
     </div>
   </template>
   <script setup>
