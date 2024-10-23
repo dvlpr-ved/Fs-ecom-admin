@@ -1,6 +1,9 @@
 <template>
   <div class="grid">
     <div class="col-12">
+      <reportFielder :filters="filters" @filter="getTableData" userLabelText="user" />
+    </div>
+    <div class="col-12">
       <div class="card">
         <div v-if="TableData" class="CutomResponsiveTable table-container">
           <DataTable v-if="TableData" ref="table" :value="TableData" dataKey="id">
@@ -9,6 +12,11 @@
                 class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
               >
                 <h5 class="m-0">Manage Chats</h5>
+                <filterBySearch
+                  :initialSearch="searchQuery"
+                  :debounceTime="300"
+                  :onSearch="updateSearch"
+                />
               </div>
             </template>
             <Column field="id" header="No" headerStyle="width:auto; min-width:2rem;">
@@ -51,6 +59,9 @@
                 </div>
               </template>
             </Column>
+            <template #footer>
+              <TableFooter :totalPages="totalPages" v-model="page"></TableFooter>
+            </template>
           </DataTable>
         </div>
         <div
@@ -82,6 +93,15 @@ const sendCleintData = reactive({
   userName: "",
 });
 
+const totalPages = ref(0);
+const page = ref(1);
+const filters = ref(getFilter(["user"]));
+const searchQuery = ref("");
+
+const updateSearch = (newSearchQuery) => {
+  searchQuery.value = newSearchQuery;
+};
+
 const closeBoat = () => {
   chatBoatVisible.value = false;
 };
@@ -92,18 +112,44 @@ const handleReply = (user_id, user_name) => {
   chatBoatVisible.value = !chatBoatVisible.value;
 };
 
-// https://fashtsaly.com/API/public/api/getchat?user_id=16
+const pagination = computed(() => {
+  if (data.value) {
+    const last_page = toFixed(data.value.total / 20);
+    return { current: data.value.current_page, total: data.total, last: last_page };
+  }
+});
 
 const getTableData = async () => {
   loading.value = true;
+  if (filters.value.from_date instanceof Date) {
+    filters.value.from_date = `${filters.value.from_date.getFullYear()}-${(
+      filters.value.from_date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${filters.value.from_date
+      .getDate()
+      .toString()
+      .padStart(2, "0")}`;
+  }
+  if (filters.value.to_date instanceof Date) {
+    filters.value.to_date = `${filters.value.to_date.getFullYear()}-${(
+      filters.value.to_date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${filters.value.to_date.getDate().toString().padStart(2, "0")}`;
+  }
   try {
     const response = await makeCustomRequest({
-      url: "api/getAllchatAdmin",
+      url: `api/getAllchatAdmin?page=${page.value}`,
       method: "GET",
+      query: {
+        from_date: filters.value.from_date,
+        to_date: filters.value.to_date,
+        user_id: filters.value.user_id,
+        search: searchQuery.value,
+      },
     });
-
     if (response) {
-      // const jsonResponse = await response.json();
       TableData.value = response.data.data;
       loading.value = false;
     } else {
@@ -117,6 +163,9 @@ const getTableData = async () => {
 };
 
 onMounted(() => {
+  getTableData();
+});
+watch((searchQuery, filters) => {
   getTableData();
 });
 </script>

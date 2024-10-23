@@ -2,17 +2,27 @@
 import Calendar from "primevue/calendar";
 import { useToast } from "primevue/usetoast";
 
-const {filters} = defineProps({
-  filters : {
-    type : Object,
-    default : {from_date : '' , to_date : '' , 'product_id' : '' , 'category_id' : '' , 'user_id' : '' , 'plan_id' : ''}
-  }
+const { filters, userLabelText } = defineProps({
+  filters: {
+    type: Object,
+    default: {
+      from_date: "",
+      to_date: "",
+      product_id: "",
+      category_id: "",
+      user_id: "",
+      plan_id: "",
+    },
+    // userLabelText: {
+    //   type: String,
+    //   default: "Seller",
+    // },
+  },
 });
 const toast = useToast();
 const showToast = (message) => {
   toast.add({ severity: "info", detail: message, life: 3000 });
 };
-
 
 const isLoading = ref(false);
 const pluckProductsList = ref([]);
@@ -20,7 +30,7 @@ const pluckSellerList = ref([]);
 const pluckCategoryList = ref([]);
 const pluckPlansyList = ref([]);
 
-const emit = defineEmits(['filter']);
+const emit = defineEmits(["filter"]);
 
 const fetchData = async (url, listRef) => {
   isLoading.value = true;
@@ -39,16 +49,16 @@ const fetchData = async (url, listRef) => {
 };
 
 const fetchAllData = () => {
-  if(filters.hasOwnProperty('product_id')){
+  if (filters.hasOwnProperty("product_id")) {
     fetchData("api/pluckProducts", pluckProductsList);
   }
-  if(filters.hasOwnProperty('user_id')){
+  if (filters.hasOwnProperty("user_id")) {
     fetchData("api/pluckSeller", pluckSellerList);
   }
-  if(filters.hasOwnProperty('category_id')){
+  if (filters.hasOwnProperty("category_id")) {
     fetchData("api/pluckCategory", pluckCategoryList);
   }
-  if(filters.hasOwnProperty('plan_id')){
+  if (filters.hasOwnProperty("plan_id")) {
     fetchData("api/pluckPlans", pluckPlansyList);
   }
 };
@@ -66,18 +76,18 @@ onMounted(() => {
       </div>
       <div v-else class="feild grid gap-1 mt-2">
         <div class="field lg:col-3 col-12">
-          <label>From Date</label><br>
+          <label>From Date</label><br />
           <Calendar v-model="filters.from_date" dateFormat="yy-mm-dd" showIcon />
         </div>
         <div class="field lg:col-3 col-12">
-          <label>To Date</label><br>
+          <label>To Date</label><br />
           <Calendar v-model="filters.to_date" dateFormat="yy-mm-dd" showIcon />
         </div>
         <div v-if="filters.hasOwnProperty('product_id')" class="field lg:col-5 col-12">
           <label>Product</label>
           <Dropdown
             v-model="filters.product_id"
-            style="width:100%"
+            style="width: 100%"
             :laoding="true"
             :options="pluckProductsList"
             optionLabel="name"
@@ -86,10 +96,10 @@ onMounted(() => {
           />
         </div>
         <div v-if="filters.hasOwnProperty('category_id')" class="field lg:col-3 col-12">
-          <label>Categgory</label><br>
+          <label>Categgory</label><br />
           <Dropdown
             v-model="filters.category_id"
-            style="width: 100%;"
+            style="width: 100%"
             :options="pluckCategoryList"
             optionLabel="name"
             optionValue="id"
@@ -97,18 +107,19 @@ onMounted(() => {
           />
         </div>
         <div v-if="filters.hasOwnProperty('user_id')" class="field lg:col-3 col-12">
-          <label>Seller</label><br>
+          <label>Seller</label><br />
           <Dropdown
             v-model="filters.user_id"
-            style="width: 100%;"
+            style="width: 100%"
             :options="pluckSellerList"
             optionLabel="name"
             optionValue="id"
-            placeholder="Select Sellers"
+            placeholder="Select Seller"
           />
-        </div>        
+          <!-- :placeholder="`Select ${userLabelText}`" -->
+        </div>
         <div v-if="filters.hasOwnProperty('plan_id')" class="feild lg:col-3 col-12">
-          <label>Subscription Plan</label><br>
+          <label>Subscription Plan</label><br />
           <Dropdown
             v-model="filters.plan_id"
             style="width: 100%"
@@ -117,17 +128,17 @@ onMounted(() => {
             optionLabel="title"
             optionValue="id"
             placeholder="Select Plan"
-          />          
+          />
         </div>
         <div class="feild lg:col-2 col-12 mt-3">
           <Button
-              label="Filter"
-              icon="pi pi-filter"
-              class="mr-2 mt-2"
-              @click="emit('filter')"
-              severity="success"
-            />
-        </div>        
+            label="Filter"
+            icon="pi pi-filter"
+            class="mr-2 mt-2"
+            @click="emit('filter')"
+            severity="success"
+          />
+        </div>
       </div>
     </div>
   </div>
