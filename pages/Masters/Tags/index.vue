@@ -1,6 +1,9 @@
 <template>
   <div class="grid">
     <div class="col-12">
+      <reportFielder :filters="filters" @filter="getTableData" />
+    </div>
+    <div class="col-12">
       <div class="card">
         <Toolbar class="mb-4">
           <template v-slot:start>
@@ -18,7 +21,7 @@
         <DataTable
           v-if="data"
           ref="table"
-          :value="data.data"
+          :value="data.data.data"
           dataKey="id"
           :paginator="true"
           :rows="10"
@@ -31,10 +34,11 @@
               class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
             >
               <h5 class="m-0">Manage Tags</h5>
-              <IconField iconPosition="left" class="block mt-2 md:mt-0">
-                <InputIcon class="pi pi-search" />
-                <InputText class="w-full sm:w-auto" placeholder="Search..." />
-              </IconField>
+              <filterBySearch
+                :initialSearch="searchQuery"
+                :debounceTime="300"
+                :onSearch="updateSearch"
+              />
             </div>
           </template>
           <Column field="ID" header="ID" headerStyle="width:auto; min-width:10rem;">
@@ -202,6 +206,16 @@ const catgMast = ref(null);
 const catgMastIndexedArr = ref(null);
 const createImageUploader = ref(false);
 const editImageUploader = ref(false);
+
+const totalPages = ref(0);
+const page = ref(1);
+const searchQuery = ref("");
+const filters = ref(getFilter([]));
+
+const updateSearch = (newSearchQuery) => {
+  searchQuery.value = newSearchQuery;
+};
+
 // Get entries
 onMounted(() => {
   getTableData();
@@ -216,12 +230,33 @@ const pagination = computed(() => {
   }
 });
 const getTableData = async () => {
+  if (filters.value.from_date instanceof Date) {
+    filters.value.from_date = `${filters.value.from_date.getFullYear()}-${(
+      filters.value.from_date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${filters.value.from_date
+      .getDate()
+      .toString()
+      .padStart(2, "0")}`;
+  }
+  if (filters.value.to_date instanceof Date) {
+    filters.value.to_date = `${filters.value.to_date.getFullYear()}-${(
+      filters.value.to_date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${filters.value.to_date.getDate().toString().padStart(2, "0")}`;
+  }
   data.value = await makeCustomRequest({
-    url: "api/Masters/Tags",
+    url: `api/Masters/Tags?page=${page.value}`,
     method: "GET",
+    // query: {
+    //   from_date: filters.value.from_date,
+    //   to_date: filters.value.to_date,
+    //   search: searchQuery.value,
+    // },
   });
 };
-// Get entries ends
 
 // create entry
 const openNew = () => {
@@ -346,4 +381,8 @@ const nameParentCatg = (id) => {
     return catgMastIndexedArr.value[id] ? catgMastIndexedArr.value[id] : "N/A";
   }
 };
+
+watch((page, searchQuery, filters) => {
+  getTableData();
+});
 </script>
